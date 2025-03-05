@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/features/presentation/screens/notes_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/home_screen.dart';
 import 'package:provider/provider.dart';
-import '../provider/auth_provider.dart';
+import '../providers/auth_provider.dart';
 import 'register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 
@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final userId = firebase_auth.FirebaseAuth.instance.currentUser!.uid;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const NotesScreen()),
+        MaterialPageRoute(builder: (_) => HomeScreen()),  // Changed from NotesScreen
       );
     } catch (e) {
       ScaffoldMessenger.of(context)

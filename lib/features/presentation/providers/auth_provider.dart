@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/features/domain/usecases/login_user.dart';
 import 'package:my_flutter_app/features/domain/usecases/register_user.dart';
-import 'package:my_flutter_app/features/presentation/screens/notes_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/home_screen.dart';
 
 class AuthProvider with ChangeNotifier {
   final LoginUser loginUser;
@@ -26,7 +26,7 @@ class AuthProvider with ChangeNotifier {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const NotesScreen()),
+        MaterialPageRoute(builder: (_) => HomeScreen()),
       );
     } catch (e) {
       _setError(e.toString());

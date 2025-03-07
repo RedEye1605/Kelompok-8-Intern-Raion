@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:my_flutter_app/features/data/models/user_model.dart';
 
 class FirebaseAuthService {
@@ -7,6 +8,9 @@ class FirebaseAuthService {
   FirebaseAuthService({firebase_auth.FirebaseAuth? firebaseAuth})
       : _firebaseAuth = firebaseAuth ?? firebase_auth.FirebaseAuth.instance;
 
+
+
+  // Register
   Future<UserModel> register(String email, String password) async {
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
@@ -26,6 +30,8 @@ class FirebaseAuthService {
     }
   }
 
+
+  // Login
   Future<UserModel> login(String email, String password) async {
     try {
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
@@ -47,7 +53,37 @@ class FirebaseAuthService {
     }
   }
 
+  //google signin
+  Future<UserModel> signInWithGoogle() async {
+  try {
+    final GoogleSignInAccount? gUser = await GoogleSignIn().signIn();
 
+    if (gUser == null) {
+      throw Exception("Google Sign-In dibatalkan");
+    }
+
+    final GoogleSignInAuthentication gAuth = await gUser.authentication;
+
+    final credential = firebase_auth.GoogleAuthProvider.credential(
+      accessToken: gAuth.accessToken,
+      idToken: gAuth.idToken,
+    );
+
+    final userCredential = await _firebaseAuth.signInWithCredential(credential);
+    final firebaseUser = userCredential.user;
+
+    if (firebaseUser != null) {
+      return UserModel(id: firebaseUser.uid, email: firebaseUser.email ?? '');
+    } else {
+      throw Exception("Google Sign-In gagal");
+    }
+  } catch (e) {
+    throw Exception("Error Google Sign-In: $e");
+  }
+}
+
+
+  // Sign Out
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
   }

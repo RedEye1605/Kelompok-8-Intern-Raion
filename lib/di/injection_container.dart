@@ -3,6 +3,7 @@ import 'package:my_flutter_app/features/data/datasources/firebase_auth_service.d
 import 'package:my_flutter_app/features/data/repositories/auth_repository_impl.dart';
 import 'package:my_flutter_app/features/domain/repositories/auth_repository.dart';
 import 'package:my_flutter_app/features/domain/usecases/login_user.dart';
+import 'package:my_flutter_app/features/domain/usecases/login_with_google.dart';
 import 'package:my_flutter_app/features/domain/usecases/register_user.dart';
 import 'package:my_flutter_app/features/presentation/providers/auth_provider.dart';
 import 'package:my_flutter_app/features/presentation/providers/home_provider.dart';
@@ -22,11 +23,15 @@ void setupDependencyInjection() {
   // Use Cases
   sl.registerLazySingleton<LoginUser>(() => LoginUser(sl()));
   sl.registerLazySingleton<RegisterUser>(() => RegisterUser(sl()));
+  sl.registerLazySingleton<LoginWithGoogle>(() => LoginWithGoogle(sl()));
+  
+  
 
   // Providers
   sl.registerLazySingleton<AuthProvider>(() => AuthProvider(
     loginUser: sl(),
     registerUser: sl(),
+    loginWithGoogle: sl(),    
   ));
   sl.registerFactory(() => HomeProvider());
 }

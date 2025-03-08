@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:my_flutter_app/features/presentation/screens/forgot_password.dart';
 import 'firebase_options.dart';
 import 'features/presentation/screens/home_screen.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(loginUser: di.sl(), registerUser: di.sl()),
+          create: (_) => AuthProvider(loginUser: di.sl(), registerUser: di.sl(), loginWithGoogle: di.sl()),
         ),
         ChangeNotifierProvider(
           create: (_) => di.sl<HomeProvider>(),
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
         routes: {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
+          '/forgot_password': (context) => const ForgotPassword(),
         },
       ),
     );

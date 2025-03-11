@@ -23,7 +23,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           onPressed: () {
             Navigator.pop(context);
           },
-          icon: Image.asset('assets/icons/back-button.png'),
+          icon: Image.asset(
+            'assets/icons/Back-Button.png',  // Update to match exact file name
+            width: 40,  // Add width for consistent sizing
+            height: 40, // Add height for consistent sizing
+          ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,

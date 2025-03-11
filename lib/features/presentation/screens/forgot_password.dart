@@ -16,8 +16,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar:
-          true, // Tambahkan ini untuk memastikan AppBar berada di depan latar belakang
+      extendBodyBehindAppBar:true, 
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {

@@ -1,75 +1,145 @@
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
 import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/custom_text_field.dart';
+import 'register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import '../providers/auth_provider.dart';
-import '../widgets/snackbar.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
-  final _usernameController = TextEditingController();
   bool _isLoading = false;
-  bool _acceptTerms = false;
 
-  Future<void> _register() async {
-    if (!_acceptTerms) {
-      showSnackBar(context, 'Please accept the terms and conditions');
+  Future<void> _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
-    if (_passwordController.text != _confirmPasswordController.text) {
-      showSnackBar(context, 'Passwords do not match');
+    if (!_isValidEmail(_emailController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid email'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      await Provider.of<AuthProvider>(context, listen: false)
-          .register(_emailController.text, _passwordController.text);
+      await Provider.of<AuthProvider>(
+        context,
+        listen: false,
+      ).login(_emailController.text, _passwordController.text, context);
 
-      await Future.delayed(const Duration(seconds: 2));
+      final userId = firebase_auth.FirebaseAuth.instance.currentUser!.uid;
 
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/');
+      if (userId != null && mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
       }
     } catch (e) {
-      if (mounted) {
-        showSnackBar(context, e.toString().replaceAll('Exception:', ''));
-      }
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception:', '')),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
-  Future<void> _signInWithGoogle() async {
+  Future<void> _handleGoogleSignIn() async {
     setState(() => _isLoading = true);
 
     try {
-      await Provider.of<AuthProvider>(context, listen: false)
-          .logInWithGoogle(context);
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        setState(() => _isLoading = false);
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final firebase_auth.AuthCredential credential = firebase_auth
+          .GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+
+      final userCredential = await firebase_auth.FirebaseAuth.instance.signInWithCredential(
+        credential,
+      );
+      final userId = userCredential.user?.uid;
+
+      if (userId != null && mounted) {
+        debugPrint("Google Sign-In successful, user ID: $userId");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      }
     } catch (e) {
-      if (mounted) showSnackBar(context, e.toString().replaceAll('Exception:', ''));
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  bool _isValidEmail(String email) {
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    return emailRegex.hasMatch(email);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/images/Register.png"),
+            image: AssetImage("assets/images/Login.png"),
             fit: BoxFit.cover,
             alignment: Alignment.topCenter,
           ),
@@ -87,7 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       children: [
                         const Text(
-                          "Register",
+                          "Welcome Back!",
                           style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.w600,
@@ -96,7 +166,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         const Text(
-                          "Create your new account",
+                          "Login to your account",
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black,
@@ -105,16 +175,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 40),
                         TextField(
-                          controller: _usernameController,
+                          controller: _emailController,
                           decoration: const InputDecoration(
-                            labelText: "Username",
+                            labelText: "Email",
                             labelStyle: TextStyle(
                               color: Colors.grey,
                               fontFamily: 'Poppins',
+                              fontWeight: FontWeight.normal,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.all(
                                 Radius.circular(10.0),
+                              ),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1.0,
                               ),
                             ),
                             filled: true,
@@ -127,25 +202,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 10),
                         TextField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: "Email",
-                            labelStyle: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: 'Poppins',
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10.0),
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            prefixIcon: Icon(Icons.email),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
                           controller: _passwordController,
                           obscureText: true,
                           decoration: const InputDecoration(
@@ -153,11 +209,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             labelStyle: TextStyle(
                               color: Colors.grey,
                               fontFamily: 'Poppins',
+                              fontWeight: FontWeight.normal,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.all(
                                 Radius.circular(10.0),
                               ),
+                              borderSide: BorderSide(color: Colors.grey),
                             ),
                             filled: true,
                             fillColor: Colors.white,
@@ -167,46 +225,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: _confirmPasswordController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: "Confirm Password",
-                            labelStyle: TextStyle(
-                              color: Colors.grey,
-                              fontFamily: 'Poppins',
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(10.0),
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: Colors.white,
-                            prefixIcon: ImageIcon(
-                              AssetImage("assets/icons/password.png"),
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _acceptTerms,
-                              onChanged: (value) {
-                                setState(() => _acceptTerms = value ?? false);
-                              },
-                            ),
-                            const Text(
-                              "I accept the terms and conditions",
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed:
+                                () => Navigator.pushNamed(
+                                  context,
+                                  '/forgot_password',
+                                ),
+                            child: const Text(
+                              "Forgot Password?",
                               style: TextStyle(
+                                color: Colors.blue,
                                 fontFamily: 'Poppins',
-                                fontSize: 12,
                               ),
                             ),
-                          ],
+                          ),
                         ),
                         const SizedBox(height: 20),
                         if (_isLoading)
@@ -215,7 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           Column(
                             children: [
                               ElevatedButton(
-                                onPressed: _register,
+                                onPressed: _handleLogin,
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 50,
@@ -228,7 +262,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   minimumSize: const Size(double.infinity, 35),
                                 ),
                                 child: const Text(
-                                  "Sign Up",
+                                  "Login",
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontFamily: 'Poppins',
@@ -252,7 +286,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ),
                                   ),
                                   const Text(
-                                    "Or sign up with",
+                                    "Or login with",
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontFamily: 'Poppins',
@@ -277,7 +311,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   IconButton(
-                                    onPressed: _signInWithGoogle,
+                                    onPressed: _handleGoogleSignIn,
                                     icon: Image.asset(
                                       "assets/icons/google.png",
                                     ),
@@ -325,9 +359,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         const SizedBox(height: 20),
                         TextButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed:
+                              () => Navigator.pushNamed(context, '/register'),
                           child: const Text(
-                            "Already have an account? Sign In",
+                            "Don't have an account? Sign up",
                             style: TextStyle(
                               color: Colors.black,
                               fontFamily: 'Poppins',
@@ -344,5 +379,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

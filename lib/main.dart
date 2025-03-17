@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_flutter_app/features/presentation/screens/forgot_password.dart';
+import 'package:my_flutter_app/features/presentation/screens/help_report_screen.dart';
 import 'firebase_options.dart';
 import 'features/presentation/screens/home_screen.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,8 @@ import 'features/presentation/providers/auth_provider.dart';
 import 'features/presentation/providers/home_provider.dart';
 import 'di/injection_container.dart' as di;
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'features/presentation/screens/settings_screen.dart';
+import 'features/presentation/screens/rate_us_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,11 +32,14 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(loginUser: di.sl(), registerUser: di.sl(), loginWithGoogle: di.sl()),
+          create:
+              (_) => AuthProvider(
+                loginUser: di.sl(),
+                registerUser: di.sl(),
+                loginWithGoogle: di.sl(),
+              ),
         ),
-        ChangeNotifierProvider(
-          create: (_) => di.sl<HomeProvider>(),
-        ),
+        ChangeNotifierProvider(create: (_) => di.sl<HomeProvider>()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -61,6 +67,9 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
           '/forgot_password': (context) => const ForgotPassword(),
+          '/settings': (context) => const SettingsScreen(),
+          '/help': (context) => const HelpReportScreen(),
+          '/rate': (context) => const RateUsScreen(),
         },
       ),
     );

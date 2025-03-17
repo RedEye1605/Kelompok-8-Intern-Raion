@@ -25,8 +25,6 @@ void setupDependencyInjection() {
   sl.registerLazySingleton<RegisterUser>(() => RegisterUser(sl()));
   sl.registerLazySingleton<LoginWithGoogle>(() => LoginWithGoogle(sl()));
   
-  
-
   // Providers
   sl.registerLazySingleton<AuthProvider>(() => AuthProvider(
     loginUser: sl(),

@@ -14,8 +14,30 @@ class FirebaseAuthService {
        _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   // Register
-  Future<UserModel> register(String email, String password) async {
+  Future<UserModel> register(
+    String email,
+    String password,
+    String username,
+  ) async {
     try {
+      // Validate username
+      if (!_isValidUsername(username)) {
+        throw Exception(
+          'Username can only contain letters, numbers, and underscores',
+        );
+      }
+
+      // Check if username already exists
+      final usernameDoc =
+          await FirebaseFirestore.instance
+              .collection('usernames')
+              .doc(username.toLowerCase())
+              .get();
+
+      if (usernameDoc.exists) {
+        throw Exception('Username already taken');
+      }
+
       // Create user with email and password
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
@@ -33,9 +55,19 @@ class FirebaseAuthService {
         await FirebaseFirestore.instance
             .collection('users')
             .doc(firebaseUser.uid)
-            .set({'email': email, 'createdAt': FieldValue.serverTimestamp()});
+            .set({
+              'email': email,
+              'username': username,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
 
-        return UserModel(id: firebaseUser.uid, email: firebaseUser.email ?? '');
+        // Reserve username
+        await FirebaseFirestore.instance
+            .collection('usernames')
+            .doc(username.toLowerCase())
+            .set({'uid': firebaseUser.uid});
+
+        return UserModel(id: firebaseUser.uid, email: firebaseUser.email ?? '', username: '');
       } else {
         throw Exception('User registration failed');
       }
@@ -58,6 +90,13 @@ class FirebaseAuthService {
     }
   }
 
+  bool _isValidUsername(String username) {
+    final RegExp usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
+    return usernameRegex.hasMatch(username) &&
+        username.length >= 3 &&
+        username.length <= 20;
+  }
+
   // Login
   Future<UserModel> login(String email, String password) async {
     try {
@@ -75,7 +114,7 @@ class FirebaseAuthService {
         throw Exception('Login failed - no user returned');
       }
 
-      return UserModel(id: user.uid, email: user.email ?? '');
+      return UserModel(id: user.uid, email: user.email ?? '', username: '');
     } on firebase_auth.FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'user-not-found':
@@ -120,7 +159,7 @@ class FirebaseAuthService {
         throw Exception('Failed to sign in with Google');
       }
 
-      return UserModel(id: user.uid, email: user.email ?? '');
+      return UserModel(id: user.uid, email: user.email ?? '', username: '');
     } on firebase_auth.FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'account-exists-with-different-credential':

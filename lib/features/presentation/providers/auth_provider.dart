@@ -55,12 +55,12 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> register(String email, String password) async {
+  Future<void> register(String email, String password, String username) async {
     _setLoading(true);
     _clearError();
     try {
       final user = await registerUser(
-        RegisterParams(email: email, password: password),
+        RegisterParams(email: email, password: password, username: username),
       );
       _userId = user.id;
       notifyListeners();
@@ -101,6 +101,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Logout logic in AuthProvider:
   Future<void> signOut(BuildContext context) async {
     try {
       await _firebaseAuth.signOut();

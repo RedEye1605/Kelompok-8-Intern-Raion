@@ -25,6 +25,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    if (_usernameController.text.isEmpty) {
+      showSnackBar(context, 'Username cannot be empty');
+      return;
+    }
+
+    if (_usernameController.text.contains(' ')) {
+      showSnackBar(context, 'Username cannot contain spaces');
+      return;
+    }
+
+    final RegExp usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
+    if (!usernameRegex.hasMatch(_usernameController.text)) {
+      showSnackBar(context, 'Username can only contain letters, numbers, and underscores');
+      return;
+    }
+
+    if (_usernameController.text.length < 3 || _usernameController.text.length > 20) {
+      showSnackBar(context, 'Username must be between 3 and 20 characters');
+      return;
+    }
+
     if (_passwordController.text != _confirmPasswordController.text) {
       showSnackBar(context, 'Passwords do not match');
       return;
@@ -33,10 +54,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await Provider.of<AuthProvider>(context, listen: false)
-          .register(_emailController.text, _passwordController.text);
-
-      await Future.delayed(const Duration(seconds: 2));
+      await Provider.of<AuthProvider>(context, listen: false).register(
+        _emailController.text,
+        _passwordController.text,
+        _usernameController.text,
+      );
 
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/');

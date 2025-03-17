@@ -7,6 +7,7 @@ import '../widgets/recent_activities.dart';
 import '../widgets/quick_actions.dart';
 import '../../../core/utils/string_extensions.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -49,6 +50,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.settings, color: Colors.black87),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.exit_to_app, color: Colors.black87),
             onPressed: () async {
               await firebase_auth.FirebaseAuth.instance.signOut();
@@ -77,10 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     size: size,
                   ),
                   SizedBox(height: size.height * 0.03),
-                  QuickActionsWidget(
-                    actions: homeProvider.actions,
-                    size: size,
-                  ),
+                  QuickActionsWidget(actions: homeProvider.actions, size: size),
                   SizedBox(height: size.height * 0.03),
                   const RecentActivitiesWidget(),
                 ],

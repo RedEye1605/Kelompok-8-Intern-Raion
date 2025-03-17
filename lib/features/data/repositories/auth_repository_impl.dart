@@ -11,18 +11,18 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<UserEntity> login(String email, String password) async {
     final user = await firebaseAuthService.login(email, password);
-    return UserEntity(id: user.id, email: user.email);
+    return UserEntity(id: user.id, email: user.email, username: '');
   }
 
   @override
   Future<UserEntity> register(String email, String password) async {
-    final user = await firebaseAuthService.register(email, password);
-    return UserEntity(id: user.id, email: user.email);
+    final user = await firebaseAuthService.register(email, password, '');
+    return UserEntity(id: user.id, email: user.email, username: '');
   }
 
   @override
   Future<UserEntity> loginWithGoogle() async {
     final user = await firebaseAuthService.signInWithGoogle();
-    return UserEntity(id: user.id, email: user.email);
+    return UserEntity(id: user.id, email: user.email, username: '');
   }
 }

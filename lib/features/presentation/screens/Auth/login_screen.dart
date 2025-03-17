@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/features/presentation/screens/home_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../widgets/custom_text_field.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/custom_text_field.dart';
 import 'register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:google_sign_in/google_sign_in.dart';
@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (userId != null && mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const HomePage()),
         );
       }
     } catch (e) {
@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
         debugPrint("Google Sign-In successful, user ID: $userId");
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const HomePage()),
         );
       }
     } catch (e) {

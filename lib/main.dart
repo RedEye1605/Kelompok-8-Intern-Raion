@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:my_flutter_app/features/presentation/screens/forgot_password.dart';
+import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
 import 'package:my_flutter_app/features/presentation/screens/help_report_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/edit_profile.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/search_page.dart';
 import 'firebase_options.dart';
-import 'features/presentation/screens/home_screen.dart';
 import 'package:provider/provider.dart';
-import 'features/presentation/screens/login_screen.dart';
-import 'features/presentation/screens/register_screen.dart';
+import 'features/presentation/screens/Auth/login_screen.dart';
+import 'features/presentation/screens/Auth/register_screen.dart';
 import 'features/presentation/providers/auth_provider.dart';
 import 'features/presentation/providers/home_provider.dart';
 import 'di/injection_container.dart' as di;
@@ -56,7 +58,7 @@ class MyApp extends StatelessWidget {
                   );
                 }
                 if (snapshot.hasData) {
-                  return HomeScreen();
+                  return HomePage();
                 }
                 return const LoginScreen();
               },
@@ -70,6 +72,9 @@ class MyApp extends StatelessWidget {
           '/settings': (context) => const SettingsScreen(),
           '/help': (context) => const HelpReportScreen(),
           '/rate': (context) => const RateUsScreen(),
+          '/home': (context) => const HomePage(),
+          '/search': (context) => const SearchPage(),
+          '/edit_profile': (context) => const EditProfile(),
         },
       ),
     );

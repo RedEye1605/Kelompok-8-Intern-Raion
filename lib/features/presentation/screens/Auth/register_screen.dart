@@ -1,145 +1,75 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/features/presentation/screens/home_screen.dart';
 import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../widgets/custom_text_field.dart';
-import 'register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:google_sign_in/google_sign_in.dart';
+import '../../providers/auth_provider.dart';
+import '../../widgets/snackbar.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _usernameController = TextEditingController();
   bool _isLoading = false;
+  bool _acceptTerms = false;
 
-  Future<void> _handleLogin() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all fields'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+  Future<void> _register() async {
+    if (!_acceptTerms) {
+      showSnackBar(context, 'Please accept the terms and conditions');
       return;
     }
 
-    if (!_isValidEmail(_emailController.text)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid email'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+    if (_passwordController.text != _confirmPasswordController.text) {
+      showSnackBar(context, 'Passwords do not match');
       return;
     }
 
     setState(() => _isLoading = true);
 
     try {
-      await Provider.of<AuthProvider>(
-        context,
-        listen: false,
-      ).login(_emailController.text, _passwordController.text, context);
+      await Provider.of<AuthProvider>(context, listen: false)
+          .register(_emailController.text, _passwordController.text);
 
-      final userId = firebase_auth.FirebaseAuth.instance.currentUser!.uid;
+      await Future.delayed(const Duration(seconds: 2));
 
-      if (userId != null && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/');
       }
     } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception:', '')),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    } finally {
       if (mounted) {
-        setState(() => _isLoading = false);
+        showSnackBar(context, e.toString().replaceAll('Exception:', ''));
       }
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _handleGoogleSignIn() async {
+  Future<void> _signInWithGoogle() async {
     setState(() => _isLoading = true);
 
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        setState(() => _isLoading = false);
-        return;
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final firebase_auth.AuthCredential credential = firebase_auth
-          .GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-
-      final userCredential = await firebase_auth.FirebaseAuth.instance.signInWithCredential(
-        credential,
-      );
-      final userId = userCredential.user?.uid;
-
-      if (userId != null && mounted) {
-        debugPrint("Google Sign-In successful, user ID: $userId");
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
+      await Provider.of<AuthProvider>(context, listen: false)
+          .logInWithGoogle(context);
     } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Login failed: ${e.toString()}'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      if (mounted) showSnackBar(context, e.toString().replaceAll('Exception:', ''));
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      setState(() => _isLoading = false);
     }
-  }
-
-  bool _isValidEmail(String email) {
-    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-    return emailRegex.hasMatch(email);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/images/Login.png"),
+            image: AssetImage("assets/images/Register.png"),
             fit: BoxFit.cover,
             alignment: Alignment.topCenter,
           ),
@@ -157,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       children: [
                         const Text(
-                          "Welcome Back!",
+                          "Register",
                           style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.w600,
@@ -166,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const Text(
-                          "Login to your account",
+                          "Create your new account",
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black,
@@ -175,21 +105,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 40),
                         TextField(
-                          controller: _emailController,
+                          controller: _usernameController,
                           decoration: const InputDecoration(
-                            labelText: "Email",
+                            labelText: "Username",
                             labelStyle: TextStyle(
                               color: Colors.grey,
                               fontFamily: 'Poppins',
-                              fontWeight: FontWeight.normal,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.all(
                                 Radius.circular(10.0),
-                              ),
-                              borderSide: BorderSide(
-                                color: Colors.grey,
-                                width: 1.0,
                               ),
                             ),
                             filled: true,
@@ -202,6 +127,25 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 10),
                         TextField(
+                          controller: _emailController,
+                          decoration: const InputDecoration(
+                            labelText: "Email",
+                            labelStyle: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: 'Poppins',
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10.0),
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            prefixIcon: Icon(Icons.email),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
                           controller: _passwordController,
                           obscureText: true,
                           decoration: const InputDecoration(
@@ -209,13 +153,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             labelStyle: TextStyle(
                               color: Colors.grey,
                               fontFamily: 'Poppins',
-                              fontWeight: FontWeight.normal,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.all(
                                 Radius.circular(10.0),
                               ),
-                              borderSide: BorderSide(color: Colors.grey),
                             ),
                             filled: true,
                             fillColor: Colors.white,
@@ -225,22 +167,46 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed:
-                                () => Navigator.pushNamed(
-                                  context,
-                                  '/forgot_password',
-                                ),
-                            child: const Text(
-                              "Forgot Password?",
-                              style: TextStyle(
-                                color: Colors.blue,
-                                fontFamily: 'Poppins',
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: _confirmPasswordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: "Confirm Password",
+                            labelStyle: TextStyle(
+                              color: Colors.grey,
+                              fontFamily: 'Poppins',
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10.0),
                               ),
                             ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            prefixIcon: ImageIcon(
+                              AssetImage("assets/icons/password.png"),
+                              color: Colors.black,
+                            ),
                           ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _acceptTerms,
+                              onChanged: (value) {
+                                setState(() => _acceptTerms = value ?? false);
+                              },
+                            ),
+                            const Text(
+                              "I accept the terms and conditions",
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 20),
                         if (_isLoading)
@@ -249,7 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Column(
                             children: [
                               ElevatedButton(
-                                onPressed: _handleLogin,
+                                onPressed: _register,
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 50,
@@ -262,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   minimumSize: const Size(double.infinity, 35),
                                 ),
                                 child: const Text(
-                                  "Login",
+                                  "Sign Up",
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontFamily: 'Poppins',
@@ -286,7 +252,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ),
                                   const Text(
-                                    "Or login with",
+                                    "Or sign up with",
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontFamily: 'Poppins',
@@ -311,7 +277,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   IconButton(
-                                    onPressed: _handleGoogleSignIn,
+                                    onPressed: _signInWithGoogle,
                                     icon: Image.asset(
                                       "assets/icons/google.png",
                                     ),
@@ -359,10 +325,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         const SizedBox(height: 20),
                         TextButton(
-                          onPressed:
-                              () => Navigator.pushNamed(context, '/register'),
+                          onPressed: () => Navigator.pop(context),
                           child: const Text(
-                            "Don't have an account? Sign up",
+                            "Already have an account? Sign In",
                             style: TextStyle(
                               color: Colors.black,
                               fontFamily: 'Poppins',
@@ -379,12 +344,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 }

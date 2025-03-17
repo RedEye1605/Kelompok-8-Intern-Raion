@@ -7,7 +7,7 @@ import '../widgets/recent_activities.dart';
 import '../widgets/quick_actions.dart';
 import '../../../core/utils/string_extensions.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'settings_screen.dart';
+import 'Settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

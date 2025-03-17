@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
-import 'package:my_flutter_app/features/presentation/screens/help_report_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Settings/help_report_screen.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/edit_profile.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/search_page.dart';
@@ -13,8 +13,8 @@ import 'features/presentation/providers/auth_provider.dart';
 import 'features/presentation/providers/home_provider.dart';
 import 'di/injection_container.dart' as di;
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'features/presentation/screens/settings_screen.dart';
-import 'features/presentation/screens/rate_us_screen.dart';
+import 'features/presentation/screens/Settings/settings_screen.dart';
+import 'features/presentation/screens/Settings/rate_us_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

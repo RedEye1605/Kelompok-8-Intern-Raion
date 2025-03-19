@@ -13,7 +13,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _usernameController = TextEditingController();
+  final _namaController =
+      TextEditingController(); // Changed from _usernameController
   bool _isLoading = false;
   bool _acceptTerms = false;
 
@@ -32,34 +33,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _register() async {
     if (!_acceptTerms) {
-      _showError('Please accept the terms and conditions');
+      _showError('Silakan setujui syarat dan ketentuan');
       return;
     }
 
-    if (_usernameController.text.isEmpty) {
-      _showError('Username cannot be empty');
+    if (_namaController.text.isEmpty) {
+      _showError('Nama tidak boleh kosong');
       return;
     }
 
-    if (_usernameController.text.contains(' ')) {
-      _showError('Username cannot contain spaces');
+    if (_namaController.text.length < 3) {
+      _showError('Nama minimal 3 karakter');
       return;
     }
 
-    final RegExp usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
-    if (!usernameRegex.hasMatch(_usernameController.text)) {
-      _showError('Username can only contain letters, numbers, and underscores');
-      return;
-    }
-
-    if (_usernameController.text.length < 3 ||
-        _usernameController.text.length > 20) {
-      _showError('Username must be between 3 and 20 characters');
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      _showError('Passwords do not match');
+    final RegExp nameRegex = RegExp(r'^[a-zA-Z\s]+$');
+    if (!nameRegex.hasMatch(_namaController.text)) {
+      _showError('Nama hanya boleh berisi huruf dan spasi');
       return;
     }
 
@@ -69,7 +59,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await Provider.of<AuthProvider>(context, listen: false).register(
         _emailController.text,
         _passwordController.text,
-        _usernameController.text,
+        _namaController.text,
       );
 
       if (mounted) {
@@ -118,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       children: [
                         const Text(
-                          "Register",
+                          "Daftar",
                           style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.w600,
@@ -127,7 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         const Text(
-                          "Create your new account",
+                          "Buat akun baru Anda",
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.black,
@@ -136,9 +126,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 40),
                         TextField(
-                          controller: _usernameController,
+                          controller: _namaController,
                           decoration: const InputDecoration(
-                            labelText: "Username",
+                            labelText:
+                                "Nama Lengkap", // Changed from "Username"
                             labelStyle: TextStyle(
                               color: Colors.grey,
                               fontFamily: 'Poppins',
@@ -180,7 +171,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _passwordController,
                           obscureText: true,
                           decoration: const InputDecoration(
-                            labelText: "Password",
+                            labelText: "Kata Sandi",
                             labelStyle: TextStyle(
                               color: Colors.grey,
                               fontFamily: 'Poppins',
@@ -203,7 +194,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           controller: _confirmPasswordController,
                           obscureText: true,
                           decoration: const InputDecoration(
-                            labelText: "Confirm Password",
+                            labelText: "Konfirmasi Kata Sandi",
                             labelStyle: TextStyle(
                               color: Colors.grey,
                               fontFamily: 'Poppins',
@@ -231,7 +222,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               },
                             ),
                             const Text(
-                              "I accept the terms and conditions",
+                              "Saya setuju dengan syarat dan ketentuan",
                               style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 12,
@@ -259,7 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   minimumSize: const Size(double.infinity, 35),
                                 ),
                                 child: const Text(
-                                  "Sign Up",
+                                  "Daftar",
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontFamily: 'Poppins',
@@ -283,7 +274,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ),
                                   ),
                                   const Text(
-                                    "Or sign up with",
+                                    "Atau daftar dengan",
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontFamily: 'Poppins',
@@ -358,7 +349,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         TextButton(
                           onPressed: () => Navigator.pop(context),
                           child: const Text(
-                            "Already have an account? Sign In",
+                            "Sudah punya akun? Masuk",
                             style: TextStyle(
                               color: Colors.black,
                               fontFamily: 'Poppins',

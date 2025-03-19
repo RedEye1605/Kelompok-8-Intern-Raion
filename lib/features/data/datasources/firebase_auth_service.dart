@@ -14,13 +14,9 @@ class FirebaseAuthService {
        _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   // Register
-  Future<UserModel> register(
-    String email,
-    String password,
-    String username,
-  ) async {
-    if (username.isEmpty) {
-      throw Exception('Username cannot be empty');
+  Future<UserModel> register(String email, String password, String nama) async {
+    if (nama.isEmpty) {
+      throw Exception('Nama tidak boleh kosong');
     }
 
     try {
@@ -28,7 +24,7 @@ class FirebaseAuthService {
       final querySnapshot =
           await FirebaseFirestore.instance
               .collection('users')
-              .where('username', isEqualTo: username.toLowerCase())
+              .where('username', isEqualTo: nama.toLowerCase())
               .get();
 
       if (querySnapshot.docs.isNotEmpty) {
@@ -54,14 +50,14 @@ class FirebaseAuthService {
             .doc(firebaseUser.uid)
             .set({
               'email': email,
-              'username': username.toLowerCase(), // Save username as a field
+              'nama': nama, // Changed from username to nama
               'createdAt': FieldValue.serverTimestamp(),
             });
 
         return UserModel(
           id: firebaseUser.uid,
           email: firebaseUser.email ?? '',
-          username: username,
+          nama: nama,
         );
       } else {
         throw Exception('User registration failed');
@@ -109,13 +105,10 @@ class FirebaseAuthService {
               .doc(user.uid)
               .get();
 
-      final username = userData.data()?['username'] ?? '';
+      final nama =
+          userData.data()?['nama'] ?? ''; // Changed from username to nama
 
-      return UserModel(
-        id: user.uid,
-        email: user.email ?? '',
-        username: username,
-      );
+      return UserModel(id: user.uid, email: user.email ?? '', nama: nama);
     } on firebase_auth.FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'user-not-found':
@@ -167,13 +160,10 @@ class FirebaseAuthService {
               .doc(user.uid)
               .get();
 
-      final username = userData.data()?['username'] ?? '';
+      final nama =
+          userData.data()?['nama'] ?? ''; // Changed from username to nama
 
-      return UserModel(
-        id: user.uid,
-        email: user.email ?? '',
-        username: username,
-      );
+      return UserModel(id: user.uid, email: user.email ?? '', nama: nama);
     } on firebase_auth.FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'account-exists-with-different-credential':
@@ -204,7 +194,7 @@ class FirebaseAuthService {
   Future<void> updateUserPhoto(String userId, String imageUrl) async {
     try {
       await FirebaseFirestore.instance.collection('users').doc(userId).update({
-        'userphoto' : imageUrl,
+        'userphoto': imageUrl,
       });
     } catch (e) {
       print("Error : $e");

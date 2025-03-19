@@ -131,4 +131,4 @@ Buka Xcode untuk proses deployment ke App Store
 - **Ihtishamul Hasan** - [@_shamhasan](https://instagram.com/_shamhasan)
 
 
-Project Link: [https://github.com/RedEye1605/Kelompok-8-Intern-Raion](https://github.co m/RedEye1605/Kelompok-8-Intern-Raion)
+Project Link: [https://github.com/RedEye1605/Kelompok-8-Intern-Raion](https://github.com/RedEye1605/Kelompok-8-Intern-Raion)

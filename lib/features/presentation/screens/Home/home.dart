@@ -49,7 +49,7 @@ class Home extends StatelessWidget {
             const SizedBox(width: 10),
             // Icon lingkaran 2
             GestureDetector(
-              onTap: (){},
+              onTap: ()=>Navigator.pushNamed(context, '/settings'),
               child: CircleAvatar(
                 backgroundColor: Colors.grey[300],
                 radius: 20,
@@ -64,9 +64,18 @@ class Home extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AdsBanner(),
-            SizedBox(
-              height: 100,
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: AdsBanner(),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(onPressed: (){}, icon: Image.asset("assets/icons/explore-btn.png")),
+                IconButton(onPressed: (){}, icon: Image.asset("assets/icons/hotel-btn.png")),
+                IconButton(onPressed: (){}, icon: Image.asset("assets/icons/road-btn.png")),
+                IconButton(onPressed: (){}, icon: Image.asset("assets/icons/transport-btn.png")),
+              ],
             ),
             Padding(
               padding: const EdgeInsets.all(16),

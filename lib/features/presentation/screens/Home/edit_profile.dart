@@ -34,32 +34,67 @@ class _EditProfileState extends State<EditProfile> {
   File? imageFile;
   String? uploadImageURL;
 
+  // Future<void> _pickAndUploadProfilePhoto() async {
+  //   final html.FileUploadInputElement uploadInput =
+  //       html.FileUploadInputElement();
+  //   uploadInput.accept = 'image/*';
+  //   uploadInput.click();
+
+  //   uploadInput.onChange.listen((event) async {
+  //     final files = uploadInput.files;
+  //     if (files!.isEmpty) return;
+
+  //     final html.File file = files.first;
+  //     final imageUrl = await _uploadToCloudinary(file);
+
+  //     setState(() {
+  //       uploadImageURL = imageUrl;
+  //     });
+  //   });
+  // }
+
+  // Future<String?> _uploadToCloudinary(html.File imageFile) async {
+  //   final reader = html.FileReader();
+  //   reader.readAsArrayBuffer(imageFile);
+
+  //   await reader.onLoadEnd.first;
+  //   final Uint8List bytes = reader.result as Uint8List;
+
+  //   final url = Uri.parse(
+  //     'https://api.cloudinary.com/v1_1/dak6uyba7/image/upload',
+  //   );
+
+  //   var request =
+  //       http.MultipartRequest('POST', url)
+  //         ..fields['upload_preset'] = 'testing'
+  //         ..files.add(
+  //           http.MultipartFile.fromBytes(
+  //             'file',
+  //             bytes,
+  //             filename: imageFile.name,
+  //           ),
+  //         );
+
+  //   var response = await request.send();
+
+  //   if (response.statusCode == 200) {
+  //     final responseData = await response.stream.bytesToString();
+  //     final jsonData = json.decode(responseData);
+  //     return jsonData['secure_url']; // URL gambar yang telah diunggah
+  //   } else {
+  //     return null;
+  //   }
+  // }
+
   // mobile picker
   Future<void> _pickAndUploadProfilePhoto() async {
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-        maxWidth: 800,
-      );
-
-      if (image != null) {
-        setState(() {
-          imageFile = File(image.path);
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error memilih gambar: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        if (image != null) imageFile = File(image.path);
+      });
     }
   }
-
   Future<String?> _uploadToCloudinary(File imageFile) async {
     final url = Uri.parse(
       'https://api.cloudinary.com/v1_1/dak6uyba7/image/upload',
@@ -84,81 +119,14 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _loadUserData(); // Add this method call
-  }
-
-  // Add this method to load existing user data
-  Future<void> _loadUserData() async {
-    try {
-      if (user != null) {
-        final userData =
-            await FirebaseFirestore.instance
-                .collection('users')
-                .doc(user!.uid)
-                .get();
-
-        if (userData.exists && mounted) {
-          setState(() {
-            _namaController.text = userData.data()?['nama'] ?? '';
-            _nomorController.text = userData.data()?['nomor'] ?? '';
-            _selectedNegara = userData.data()?['negara'] ?? 'Indonesia';
-            _negaraController.text = _selectedNegara!;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint('Error loading user data: $e');
-    }
-  }
-
-  Widget _buildProfileImage() {
-    return Stack(
-      alignment: AlignmentDirectional.bottomEnd,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.grey[300]!, width: 2),
-          ),
-          child: CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.grey[200],
-            backgroundImage: _getProfileImage(),
-          ),
-        ),
-        Positioned(
-          bottom: -10,
-          right: -10,
-          child: IconButton(
-            onPressed: _pickAndUploadProfilePhoto,
-            icon: Image.asset(
-              "assets/icons/edit_photo.png",
-              width: 34,
-              height: 34,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  ImageProvider _getProfileImage() {
-    if (imageFile != null) {
-      return FileImage(imageFile!);
-    }
-
-    if (user?.photoURL != null && user!.photoURL!.isNotEmpty) {
-      return NetworkImage(user!.photoURL!);
-    }
-
-    return const AssetImage('assets/icons/profile-icon.png');
-  }
-
-  @override
   Widget build(BuildContext context) {
-    void negaraChanged(String? newValue) {
+    @override
+    void initState() {
+      super.initState();
+      _negaraController.text = _selectedNegara!;
+    }
+
+    void _negaraChanged(String? newValue) {
       setState(() {
         _selectedNegara = newValue;
         _negaraController.text = newValue!;
@@ -191,13 +159,39 @@ class _EditProfileState extends State<EditProfile> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
+              // mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(height: 100),
-                _buildProfileImage(),
+                Stack(
+                  alignment: AlignmentDirectional(1.35, 1.35),
+                  children: [
+                    CircleAvatar(
+                      backgroundImage:
+                          imageFile != null
+                              ? FileImage(imageFile!)
+                              : (user?.photoURL != null
+                                      ? NetworkImage(user!.photoURL!)
+                                      : AssetImage(
+                                        'assets/icons/profile-icon.png',
+                                      ))
+                                  as ImageProvider,
+                      backgroundColor: Colors.grey,
+                      radius: 50,
+                    ),
+                    IconButton(
+                      onPressed: _pickAndUploadProfilePhoto,
+                      icon: Image.asset(
+                        "assets/icons/edit_photo.png",
+                        width: 34,
+                        height: 34,
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 24),
                 Column(
                   children: [
@@ -294,7 +288,7 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                         ),
                       ],
-                      onChanged: negaraChanged,
+                      onChanged: _negaraChanged,
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -320,29 +314,8 @@ class _EditProfileState extends State<EditProfile> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _editHandle,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      "Simpan",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
+                SizedBox(height: 100),
+                ElevatedButton(onPressed: _editHandle, child: Text("Simpan")),
               ],
             ),
           ),
@@ -354,67 +327,34 @@ class _EditProfileState extends State<EditProfile> {
   Future<void> _editHandle() async {
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Pengguna tidak ditemukan"),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Pengguna tidak ditemukan")));
       return;
     }
 
     try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
-      );
-
-      // Upload image if selected
       if (imageFile != null) {
         uploadImageURL = await _uploadToCloudinary(imageFile!);
-        // Update user profile photo in Firebase Auth
-        if (uploadImageURL != null) {
-          await user.updatePhotoURL(uploadImageURL);
-        }
       }
 
-      // Update Firestore data
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-        'nama': _namaController.text.trim(),
+        'nama': _namaController.text,
         'email': user.email,
         'negara': _selectedNegara,
-        'nomor':
-            _getNomorNegara(_selectedNegara) + _nomorController.text.trim(),
-        'updatedAt': FieldValue.serverTimestamp(),
-        if (uploadImageURL != null) 'photoURL': uploadImageURL,
+        'nomor': _nomorController.text,
+        if (uploadImageURL != null) 'userPhoto': uploadImageURL,
       }, SetOptions(merge: true));
 
-      // Close loading dialog and show success message
-      if (mounted) {
-        Navigator.pop(context); // Close loading dialog
-        Navigator.pop(context); // Return to previous screen
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Profil berhasil diperbarui"),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Profil berhasil diperbarui")));
     } catch (e) {
-      // Close loading dialog and show error
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Gagal menyimpan data: $e"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Gagal menyimpan data: $e")));
     }
+    Navigator.pop(context);
   }
 
   String _getNomorNegara(String? negara) {

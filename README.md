@@ -127,7 +127,8 @@ Buka Xcode untuk proses deployment ke App Store
 5. Buat Pull Request
 
 ## Kontak
-Rhendy Saragih - [@rhendysrg_](https://instagram.com/rhendysrg_)
-Ihtishamul Hasan - [@_shamhasan](https://instagram.com/_shamhasan)
+- **Rhendy Saragih** - [@rhendysrg_](https://instagram.com/rhendysrg_)
+- **Ihtishamul Hasan** - [@_shamhasan](https://instagram.com/_shamhasan)
+
 
 Project Link: [https://github.com/RedEye1605/Kelompok-8-Intern-Raion](https://github.co m/RedEye1605/Kelompok-8-Intern-Raion)

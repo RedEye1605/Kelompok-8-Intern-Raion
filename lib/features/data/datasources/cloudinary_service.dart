@@ -1,9 +1,4 @@
-import 'package:cloudinary_api/src/response/upload_result.dart';
-import 'package:cloudinary_api/uploader/cloudinary_uploader.dart';
-import 'package:cloudinary_api/uploader/uploader_response.dart';
 import 'package:cloudinary_public/cloudinary_public.dart';
-import 'package:cloudinary_url_gen/cloudinary.dart';
-import 'package:cloudinary_api/src/request/model/uploader_params.dart';
 
 class CloudinaryService {
   final CloudinaryPublic cloudinary;

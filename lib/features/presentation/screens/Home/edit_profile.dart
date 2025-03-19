@@ -91,7 +91,7 @@ class _EditProfileState extends State<EditProfile> {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        if (image != null) imageFile = File(image.path);
+        imageFile = File(image.path);
       });
     }
   }
@@ -126,7 +126,7 @@ class _EditProfileState extends State<EditProfile> {
       _negaraController.text = _selectedNegara!;
     }
 
-    void _negaraChanged(String? newValue) {
+    void negaraChanged(String? newValue) {
       setState(() {
         _selectedNegara = newValue;
         _negaraController.text = newValue!;
@@ -288,7 +288,7 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                         ),
                       ],
-                      onChanged: _negaraChanged,
+                      onChanged: negaraChanged,
                     ),
                     const SizedBox(height: 10),
                     TextField(

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/features/domain/repositories/auth_repository.dart';
 import 'package:my_flutter_app/features/domain/usecases/login_user.dart';
 import 'package:my_flutter_app/features/domain/usecases/login_with_google.dart';
 import 'package:my_flutter_app/features/domain/usecases/register_user.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
 
 class AuthProvider with ChangeNotifier {

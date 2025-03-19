@@ -316,10 +316,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ),
                                     style: ButtonStyle(
                                       backgroundColor:
-                                          const MaterialStatePropertyAll<Color>(
+                                          const WidgetStatePropertyAll<Color>(
                                             Colors.white,
                                           ),
-                                      shape: MaterialStatePropertyAll<
+                                      shape: WidgetStatePropertyAll<
                                         RoundedRectangleBorder
                                       >(
                                         RoundedRectangleBorder(
@@ -338,10 +338,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     icon: Image.asset("assets/icons/apple.png"),
                                     style: ButtonStyle(
                                       backgroundColor:
-                                          const MaterialStatePropertyAll<Color>(
+                                          const WidgetStatePropertyAll<Color>(
                                             Colors.white,
                                           ),
-                                      shape: MaterialStatePropertyAll<
+                                      shape: WidgetStatePropertyAll<
                                         RoundedRectangleBorder
                                       >(
                                         RoundedRectangleBorder(

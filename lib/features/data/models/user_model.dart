@@ -15,7 +15,7 @@ class UserModel extends UserEntity {
     return UserModel(
       id: json['id'],
       email: json['email'],
-      nama: json['nama'], // Changed from username to nama
+      nama: json['nama'], 
     );
   }
 
@@ -23,7 +23,7 @@ class UserModel extends UserEntity {
     return {
       'id': id,
       'email': email,
-      'nama': nama, // Changed from username to nama
+      'nama': nama,
     };
   }
 }

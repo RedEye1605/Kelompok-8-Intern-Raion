@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class CloudinaryService {
   final cloudinary = CloudinaryPublic(
     'dak6uyba7', // Cloud name
-    'ml_default', // Upload preset
+    'testing' // Upload preset
   );
 
   Future<String?> uploadImage(dynamic imageFile) async {

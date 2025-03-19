@@ -1,6 +1,5 @@
 import 'package:cloudinary_flutter/cloudinary_context.dart';
 import 'package:cloudinary_url_gen/cloudinary.dart';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
@@ -14,12 +13,14 @@ import 'features/presentation/screens/Auth/login_screen.dart';
 import 'features/presentation/screens/Auth/register_screen.dart';
 import 'features/presentation/providers/auth_provider.dart';
 import 'features/presentation/providers/home_provider.dart';
+import 'package:my_flutter_app/features/presentation/providers/road_status_provider.dart';
 import 'di/injection_container.dart' as di;
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'features/presentation/screens/Settings/settings_screen.dart';
 import 'features/presentation/screens/Settings/rate_us_screen.dart';
 import 'package:my_flutter_app/features/presentation/screens/Settings/pengajuan_warlok_screen.dart';
-
+import 'package:my_flutter_app/features/presentation/screens/road-status/road_status_screen.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +29,12 @@ void main() async {
 
   di.setupDependencyInjection();
 
-  CloudinaryContext.cloudinary = Cloudinary.fromCloudName(cloudName: 'dak6uyba7');
+  CloudinaryContext.cloudinary = Cloudinary.fromCloudName(
+    cloudName: 'dak6uyba7',
+  );
+
+  // Add Indonesian locale for timeago
+  timeago.setLocaleMessages('id', timeago.IdMessages());
 
   runApp(const MyApp());
 }
@@ -40,15 +46,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<HomeProvider>()),
         ChangeNotifierProvider(
           create:
-              (_) => AuthProvider(
-                loginUser: di.sl(),
-                registerUser: di.sl(),
-                loginWithGoogle: di.sl(),
-              ),
+              (_) =>
+                  di
+                      .sl<
+                        RoadStatusProvider
+                      >(), // Gunakan sl untuk RoadStatusProvider
         ),
-        ChangeNotifierProvider(create: (_) => di.sl<HomeProvider>()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -83,10 +90,9 @@ class MyApp extends StatelessWidget {
           '/search': (context) => const SearchPage(),
           '/edit_profile': (context) => const EditProfile(),
           '/pengajuan_warlok': (context) => const PengajuanWarlokScreen(),
+          '/road_status': (context) => RoadStatusScreen(),
         },
       ),
     );
   }
 }
-
-

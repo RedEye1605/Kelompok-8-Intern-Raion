@@ -45,9 +45,9 @@ class ProfilePage extends StatelessWidget {
                   alignment: AlignmentDirectional(1.35,1.35),
                   children:[
                   CircleAvatar(
-                    child: Image.asset('assets/icons/profile-icon.png'),
                     backgroundColor: Colors.grey,
                     radius: 50,
+                    child: Image.asset('assets/icons/profile-icon.png'),
                   ),
                   IconButton(
                     onPressed: ()=> Navigator.pushNamed(context, "/edit_profile"), 

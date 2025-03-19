@@ -19,35 +19,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   bool _acceptTerms = false;
 
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   Future<void> _register() async {
     if (!_acceptTerms) {
-      showSnackBar(context, 'Please accept the terms and conditions');
+      _showError('Please accept the terms and conditions');
       return;
     }
 
     if (_usernameController.text.isEmpty) {
-      showSnackBar(context, 'Username cannot be empty');
+      _showError('Username cannot be empty');
       return;
     }
 
     if (_usernameController.text.contains(' ')) {
-      showSnackBar(context, 'Username cannot contain spaces');
+      _showError('Username cannot contain spaces');
       return;
     }
 
     final RegExp usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
     if (!usernameRegex.hasMatch(_usernameController.text)) {
-      showSnackBar(context, 'Username can only contain letters, numbers, and underscores');
+      _showError('Username can only contain letters, numbers, and underscores');
       return;
     }
 
-    if (_usernameController.text.length < 3 || _usernameController.text.length > 20) {
-      showSnackBar(context, 'Username must be between 3 and 20 characters');
+    if (_usernameController.text.length < 3 ||
+        _usernameController.text.length > 20) {
+      _showError('Username must be between 3 and 20 characters');
       return;
     }
 
     if (_passwordController.text != _confirmPasswordController.text) {
-      showSnackBar(context, 'Passwords do not match');
+      _showError('Passwords do not match');
       return;
     }
 
@@ -65,7 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } catch (e) {
       if (mounted) {
-        showSnackBar(context, e.toString().replaceAll('Exception:', ''));
+        _showError(e.toString().replaceAll('Exception:', '').trim());
       }
     } finally {
       setState(() => _isLoading = false);
@@ -76,10 +90,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await Provider.of<AuthProvider>(context, listen: false)
-          .logInWithGoogle(context);
+      await Provider.of<AuthProvider>(
+        context,
+        listen: false,
+      ).logInWithGoogle(context);
     } catch (e) {
-      if (mounted) showSnackBar(context, e.toString().replaceAll('Exception:', ''));
+      if (mounted) {
+        _showError(e.toString().replaceAll('Exception:', '').trim());
+      }
     } finally {
       setState(() => _isLoading = false);
     }
@@ -89,13 +107,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/images/Register.png"),
-            fit: BoxFit.cover,
-            alignment: Alignment.topCenter,
-          ),
-        ),
         child: SafeArea(
           child: SingleChildScrollView(
             child: Padding(

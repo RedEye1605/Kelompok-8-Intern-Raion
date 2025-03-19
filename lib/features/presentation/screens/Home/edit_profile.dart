@@ -25,7 +25,7 @@ class _EditProfileState extends State<EditProfile> {
       _negaraController.text = _selectedNegara!;
     }
 
-    void _negaraChanged(String? newValue){
+    void negaraChanged(String? newValue){
       setState(() {
         _selectedNegara = newValue;
         _negaraController.text = newValue!;
@@ -69,9 +69,9 @@ class _EditProfileState extends State<EditProfile> {
                   alignment: AlignmentDirectional(1.35,1.35),
                   children:[
                   CircleAvatar( 
-                    child: Image.asset('assets/icons/profile-icon.png'),
                     backgroundColor: Colors.grey,
-                    radius: 50,
+                    radius: 50, 
+                    child: Image.asset('assets/icons/profile-icon.png'),
                   ),
                   IconButton(
                     onPressed: (){}, 
@@ -174,7 +174,7 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                         ),
                       ],
-                      onChanged: _negaraChanged,
+                      onChanged: negaraChanged,
                     ),
                     const SizedBox(height: 10),
                     TextField(

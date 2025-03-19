@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_flutter_app/features/presentation/widgets/card_widget.dart';
 
 class DestinasiTab extends StatelessWidget {
-  DestinasiTab({super.key});
+  const DestinasiTab({super.key});
 
   @override
   Widget build(BuildContext context) {

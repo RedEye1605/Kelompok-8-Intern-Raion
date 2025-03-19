@@ -15,6 +15,7 @@ import 'di/injection_container.dart' as di;
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'features/presentation/screens/Settings/settings_screen.dart';
 import 'features/presentation/screens/Settings/rate_us_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Settings/pengajuan_warlok_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,6 +76,7 @@ class MyApp extends StatelessWidget {
           '/home': (context) => const HomePage(),
           '/search': (context) => const SearchPage(),
           '/edit_profile': (context) => const EditProfile(),
+          '/pengajuan_warlok': (context) => const PengajuanWarlokScreen(),
         },
       ),
     );

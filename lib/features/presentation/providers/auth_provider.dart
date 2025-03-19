@@ -49,7 +49,8 @@ class AuthProvider with ChangeNotifier {
         );
       }
     } catch (e) {
-      _setError(e.toString());
+      _setError(e.toString()); // Simpan error di _errorMessage
+      rethrow; // Lempar ulang untuk ditangani di UI
     } finally {
       _setLoading(false);
     }
@@ -64,15 +65,10 @@ class AuthProvider with ChangeNotifier {
       );
       _userId = user.id;
       notifyListeners();
-
-      // Create user document in Firestore
-      await FirebaseFirestore.instance.collection('users').doc(user.id).set({
-        'email': email,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      // Hapus pembuatan dokumen di sini karena sudah dilakukan di FirebaseAuthService
     } catch (e) {
       _setError(e.toString());
-      throw e; // Rethrow to handle in UI
+      rethrow; // Rethrow to handle in UI
     } finally {
       _setLoading(false);
     }

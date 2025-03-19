@@ -26,6 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
           content: Text('Please fill in all fields'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16),
+          duration: Duration(seconds: 3),
         ),
       );
       return;
@@ -37,6 +39,8 @@ class _LoginScreenState extends State<LoginScreen> {
           content: Text('Please enter a valid email'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.all(16),
+          duration: Duration(seconds: 3),
         ),
       );
       return;
@@ -49,27 +53,19 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         listen: false,
       ).login(_emailController.text, _passwordController.text, context);
-
-      final userId = firebase_auth.FirebaseAuth.instance.currentUser!.uid;
-
-      if (userId != null && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
+      
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception:', '').trim()),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 3),
+          ),
         );
       }
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception:', '')),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 3),
-        ),
-      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -317,10 +313,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                     style: ButtonStyle(
                                       backgroundColor:
-                                          const MaterialStatePropertyAll<Color>(
+                                          const WidgetStatePropertyAll<Color>(
                                             Colors.white,
                                           ),
-                                      shape: MaterialStatePropertyAll<
+                                      shape: WidgetStatePropertyAll<
                                         RoundedRectangleBorder
                                       >(
                                         RoundedRectangleBorder(
@@ -339,10 +335,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                     icon: Image.asset("assets/icons/apple.png"),
                                     style: ButtonStyle(
                                       backgroundColor:
-                                          const MaterialStatePropertyAll<Color>(
+                                          const WidgetStatePropertyAll<Color>(
                                             Colors.white,
                                           ),
-                                      shape: MaterialStatePropertyAll<
+                                      shape: WidgetStatePropertyAll<
                                         RoundedRectangleBorder
                                       >(
                                         RoundedRectangleBorder(

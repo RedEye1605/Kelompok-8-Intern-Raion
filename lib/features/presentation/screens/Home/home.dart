@@ -49,7 +49,7 @@ class Home extends StatelessWidget {
             const SizedBox(width: 10),
             // Icon lingkaran 2
             GestureDetector(
-              onTap: (){},
+              onTap: () => Navigator.pushNamed(context, '/settings'), // Navigate to settings screen
               child: CircleAvatar(
                 backgroundColor: Colors.grey[300],
                 radius: 20,

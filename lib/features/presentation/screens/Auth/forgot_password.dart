@@ -65,7 +65,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       ),
                     ),
                     SizedBox(height: 60),
-                    Container(
+                    SizedBox(
                       width: 420,
                       child: TextField(
                         controller: _emailController,
@@ -100,7 +100,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                 ),
               ),
               SizedBox(height: 200),
-              Container(
+              SizedBox(
                 width: 300,
                 height: 50,
                 child: ElevatedButton(
@@ -119,18 +119,18 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         Navigator.pop(context);
                         _emailController.clear();
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
                   child: Text(
                     'Send',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.white,
                       fontFamily: 'Poppins',
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                 ),

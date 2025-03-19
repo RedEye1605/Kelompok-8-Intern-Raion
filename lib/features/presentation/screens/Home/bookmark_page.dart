@@ -6,7 +6,7 @@ import 'package:my_flutter_app/features/presentation/screens/Home/bookmark-tab/p
 import 'package:my_flutter_app/features/presentation/screens/Home/bookmark-tab/transportasi_tab.dart';
 
 class BookmarkPage extends StatefulWidget {
-  BookmarkPage({super.key});
+  const BookmarkPage({super.key});
 
   @override
   State<BookmarkPage> createState() => _BookmarkPageState();
@@ -68,7 +68,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                     context,
                   );
                   return AnimatedBuilder(
-                    animation: tabController!,
+                    animation: tabController,
                     builder: (context, child) {
                       return TabBar(
                         isScrollable: true,

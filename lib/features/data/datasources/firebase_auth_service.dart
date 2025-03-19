@@ -200,4 +200,14 @@ class FirebaseAuthService {
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
   }
+
+  Future<void> updateUserPhoto(String _userId, String imageUrl) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(_userId).update({
+        'userphoto' : imageUrl,
+      });
+    } catch (e) {
+      print("Error : $e");
+    }
+  }
 }

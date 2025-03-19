@@ -41,19 +41,6 @@ class HelpReportScreen extends StatelessWidget {
                     _launchUrl('tel:+6281234567890');
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.chat, color: Colors.orange),
-                  title: const Text('Live Chat'),
-                  subtitle: const Text('Tersedia 24/7'),
-                  onTap: () {
-                    Navigator.of(ctx).pop();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Fitur Live Chat akan segera hadir'),
-                      ),
-                    );
-                  },
-                ),
               ],
             ),
             actions: [
@@ -70,151 +57,147 @@ class HelpReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        title: const Text('Bantuan & Laporkan Masalah'),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        title: const Text(
+          'Bantuan & Laporkan Masalah',
+          style: TextStyle(color: Colors.black),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
+          // Bantuan Section
           const Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.symmetric(vertical: 8),
             child: Text(
-              'Apa yang dapat kami bantu?',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-
-          // Panduan dan Informasi
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Text(
-              'PANDUAN DAN INFORMASI',
+              'Bantuan',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey,
+                color: Colors.black,
               ),
             ),
           ),
 
           ListTile(
-            leading: const Icon(Icons.help_outline, color: Colors.blue),
+            leading: const Icon(Icons.book),
             title: const Text('Panduan Pengguna'),
-            subtitle: const Text('Cara menggunakan aplikasi'),
             trailing: const Icon(Icons.keyboard_arrow_right),
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Panduan pengguna akan segera hadir'),
+                  duration: Duration(seconds: 2),
                 ),
               );
             },
           ),
-
           const Divider(),
 
           ListTile(
-            leading: const Icon(Icons.policy, color: Colors.blue),
+            leading: const Icon(Icons.policy),
             title: const Text('Kebijakan dan Ketentuan'),
-            subtitle: const Text('Syarat dan ketentuan penggunaan'),
             trailing: const Icon(Icons.keyboard_arrow_right),
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Kebijakan dan ketentuan akan segera hadir'),
-                ),
-              );
+              _launchUrl('https://myflutterapp.com/privacy-policy');
             },
           ),
-
           const Divider(),
 
           ListTile(
-            leading: const Icon(Icons.support_agent, color: Colors.blue),
+            leading: const Icon(Icons.support),
             title: const Text('Layanan Pelanggan'),
-            subtitle: const Text('Hubungi tim dukungan kami'),
             trailing: const Icon(Icons.keyboard_arrow_right),
             onTap: () => _showContactDialog(context),
           ),
+          const Divider(),
 
-          // Laporkan Masalah
+          // Laporan Section
           const Padding(
-            padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+            padding: EdgeInsets.symmetric(vertical: 8),
             child: Text(
-              'LAPORKAN MASALAH',
+              'Laporan',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey,
+                color: Colors.black,
               ),
             ),
           ),
 
           ListTile(
-            leading: const Icon(Icons.bug_report, color: Colors.orange),
+            leading: const Icon(Icons.warning),
             title: const Text('Masalah Teknis'),
-            subtitle: const Text(
-              'Aplikasi crash atau tidak berfungsi dengan baik',
-            ),
             trailing: const Icon(Icons.keyboard_arrow_right),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ReportTechnicalIssueScreen(),
-                ),
+              showDialog(
+                context: context,
+                builder:
+                    (ctx) => AlertDialog(
+                      title: const Text('Laporkan Masalah Teknis'),
+                      content: const Text(
+                        'Silakan jelaskan masalah teknis yang Anda alami melalui email support kami.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Batal'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _launchUrl(
+                              'mailto:support@myflutterapp.com?subject=Laporan%20Masalah%20Teknis',
+                            );
+                          },
+                          child: const Text('Email Support'),
+                        ),
+                      ],
+                    ),
               );
             },
           ),
-
           const Divider(),
 
           ListTile(
-            leading: const Icon(Icons.security, color: Colors.red),
+            leading: const Icon(Icons.security),
             title: const Text('Aktivitas Mencurigakan'),
-            subtitle: const Text('Laporkan pelanggaran atau penyalahgunaan'),
             trailing: const Icon(Icons.keyboard_arrow_right),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ReportSuspiciousScreen(),
-                ),
+              showDialog(
+                context: context,
+                builder:
+                    (ctx) => AlertDialog(
+                      title: const Text('Laporkan Aktivitas Mencurigakan'),
+                      content: const Text(
+                        'Untuk melaporkan aktivitas mencurigakan, silakan hubungi tim keamanan kami.',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Batal'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            _launchUrl(
+                              'mailto:security@myflutterapp.com?subject=Laporan%20Aktivitas%20Mencurigakan',
+                            );
+                          },
+                          child: const Text('Hubungi Tim Keamanan'),
+                        ),
+                      ],
+                    ),
               );
             },
           ),
-
-          const Divider(),
-
-          ListTile(
-            leading: const Icon(Icons.feedback, color: Colors.green),
-            title: const Text('Saran dan Masukan'),
-            subtitle: const Text('Bagikan ide untuk meningkatkan aplikasi'),
-            trailing: const Icon(Icons.keyboard_arrow_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const FeedbackScreen()),
-              );
-            },
-          ),
-
-          const SizedBox(height: 24),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Text(
-              'Untuk pertanyaan lain, hubungi kami melalui email di support@myflutterapp.com',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-          ),
-
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
         ],
       ),
     );

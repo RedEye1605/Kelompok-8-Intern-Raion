@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
 import 'help_report_screen.dart';
 import 'rate_us_screen.dart';
+import 'pengajuan_warlok_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -51,7 +52,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  // Dialog konfirmasi logout
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -80,9 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   OutlinedButton(
                     onPressed: () {
-                      Navigator.pop(
-                        context,
-                      ); // Menutup dialog jika memilih "Tidak"
+                      Navigator.pop(context);
                     },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Colors.grey),
@@ -92,8 +90,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ElevatedButton(
                     onPressed: () async {
                       Navigator.pop(context); // Menutup dialog
-
-                      // Proses logout
                       await Provider.of<AuthProvider>(
                         context,
                         listen: false,
@@ -115,212 +111,139 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Perbarui metode _showDeleteConfirmation()
-  void _showDeleteConfirmation() {
-    final _passwordController = TextEditingController();
-
-    // Step 1: Minta password terlebih dahulu
+  void showDeleteAccountDialog(BuildContext context, VoidCallback onConfirm) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: const EdgeInsets.all(16.0),
+        return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Masukkan Kata Sandi',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Untuk melanjutkan penghapusan akun, masukkan kata sandi Anda.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Kata sandi',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Apakah Anda yakin ingin menghapus akun?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(
-                        context,
-                      ); // Menutup dialog jika memilih "Batal"
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.grey),
+                const SizedBox(height: 10),
+                const Text(
+                  'Tindakan ini tidak dapat dibatalkan.\nSemua data Anda akan hilang secara permanen.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade100,
+                        foregroundColor: Colors.red,
+                        minimumSize: const Size(100, 45),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'Tidak',
+                        style: TextStyle(fontSize: 16),
+                      ),
                     ),
-                    child: const Text('Batal'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Validasi input
-                      if (_passwordController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Masukkan kata sandi'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-
-                      Navigator.pop(context); // Tutup dialog password
-
-                      // Verifikasi password
-                      try {
-                        final user = _auth.currentUser;
-                        if (user != null && user.email != null) {
-                          // Mencoba untuk re-authenticate
-                          final credential = firebase_auth
-                              .EmailAuthProvider.credential(
-                            email: user.email!,
-                            password: _passwordController.text,
-                          );
-
-                          // Show loading dialog
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder:
-                                (context) => const AlertDialog(
-                                  content: Row(
-                                    children: [
-                                      CircularProgressIndicator(),
-                                      SizedBox(width: 16),
-                                      Text("Memverifikasi..."),
-                                    ],
-                                  ),
-                                ),
-                          );
-
-                          // Authenticate
-                          await user.reauthenticateWithCredential(credential);
-
-                          if (Navigator.canPop(context)) {
-                            Navigator.of(context).pop(); // Tutup loading dialog
-                          }
-
-                          // Jika autentikasi berhasil, tampilkan dialog konfirmasi
-                          _showFinalDeleteConfirmation();
-                        }
-                      } catch (e) {
-                        if (Navigator.canPop(context)) {
-                          Navigator.of(
-                            context,
-                          ).pop(); // Tutup loading dialog jika ada
-                        }
-
-                        String errorMessage = 'Kata sandi tidak valid';
-                        if (e is firebase_auth.FirebaseAuthException) {
-                          if (e.code == 'wrong-password') {
-                            errorMessage =
-                                'Kata sandi tidak valid. Silakan coba lagi';
-                          } else if (e.code == 'too-many-requests') {
-                            errorMessage =
-                                'Terlalu banyak percobaan. Silakan coba beberapa saat lagi';
-                          }
-                        }
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(errorMessage),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      } finally {
-                        // Bersihkan password controller
-                        _passwordController.clear();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        onConfirm();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        minimumSize: const Size(100, 45),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      child: const Text(
+                        'Ya',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
                     ),
-                    child: const Text('Selanjutnya'),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  // Metode untuk konfirmasi akhir penghapusan akun
-  void _showFinalDeleteConfirmation() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          contentPadding: const EdgeInsets.all(16.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.red,
-                size: 48,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Apakah Anda yakin ingin menghapus akun?',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Tindakan ini tidak dapat dibatalkan. Semua data Anda akan hilang secara permanen.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(
-                        context,
-                      ); // Menutup dialog jika memilih "Tidak"
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.grey),
-                    ),
-                    child: const Text('Tidak'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      Navigator.pop(context); // Menutup dialog
+  void _showDeleteConfirmation() async {
+    final passwordController = TextEditingController();
 
-                      try {
-                        final user = _auth.currentUser;
-                        if (user != null) {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
+
+      // Store BuildContext for later use
+      final navigator = Navigator.of(context);
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+      await showDialog(
+        context: context,
+        builder:
+            (BuildContext dialogContext) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              title: const Text('Konfirmasi Kata Sandi'),
+              content: TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Kata Sandi',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (passwordController.text.isEmpty) {
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(content: Text('Masukkan kata sandi')),
+                      );
+                      return;
+                    }
+
+                    try {
+                      final credential = firebase_auth
+                          .EmailAuthProvider.credential(
+                        email: user.email!,
+                        password: passwordController.text,
+                      );
+                      await user.reauthenticateWithCredential(credential);
+                      Navigator.of(dialogContext).pop();
+
+                      // Show final confirmation dialog
+                      showDeleteAccountDialog(context, () async {
+                        try {
                           // Show loading dialog
                           showDialog(
                             context: context,
                             barrierDismissible: false,
                             builder:
-                                (context) => const AlertDialog(
+                                (loadingContext) => const AlertDialog(
                                   content: Row(
                                     children: [
                                       CircularProgressIndicator(),
@@ -331,25 +254,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ),
                           );
 
-                          // Delete user data from Firestore
-                          await _firestore
-                              .collection('users')
-                              .doc(user.uid)
-                              .delete();
+                          // Delete all user data in order
+                          await Future.wait([
+                            // 1. Delete warlok data
+                            _firestore
+                                .collection('warlok')
+                                .doc(user.uid)
+                                .delete(),
 
-                          // Delete any user-related collections
-                          await _firestore
-                              .collection('ratings')
-                              .where('userId', isEqualTo: user.uid)
-                              .get()
-                              .then((snapshot) {
-                                for (DocumentSnapshot doc in snapshot.docs) {
-                                  doc.reference.delete();
-                                }
-                              });
+                            // 2. Delete ratings
+                            _firestore
+                                .collection('ratings')
+                                .where('userId', isEqualTo: user.uid)
+                                .get()
+                                .then((snapshot) {
+                                  for (var doc in snapshot.docs) {
+                                    doc.reference.delete();
+                                  }
+                                }),
 
-                          // Kode yang perlu ditambahkan pada fungsi penghapusan akun
-                          // Tambahkan setelah menghapus data ratings
+                            // 3. Delete properties
+                            _firestore
+                                .collection('properties')
+                                .where('userId', isEqualTo: user.uid)
+                                .get()
+                                .then((snapshot) {
+                                  for (var doc in snapshot.docs) {
+                                    doc.reference.delete();
+                                  }
+                                }),
+
+                            // 4. Delete bookings
+                            _firestore
+                                .collection('bookings')
+                                .where('userId', isEqualTo: user.uid)
+                                .get()
+                                .then((snapshot) {
+                                  for (var doc in snapshot.docs) {
+                                    doc.reference.delete();
+                                  }
+                                }),
+                          ]);
+
+                          // 5. Get and delete username
                           final userData =
                               await _firestore
                                   .collection('users')
@@ -367,53 +314,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 .delete();
                           }
 
-                          // Delete the actual user account
+                          // 6. Delete user document
+                          await _firestore
+                              .collection('users')
+                              .doc(user.uid)
+                              .delete();
+
+                          // 7. Delete auth account
                           await user.delete();
 
-                          if (mounted) {
-                            // Close loading dialog
-                            Navigator.of(context).pop();
-
-                            // Navigate to login screen
-                            Navigator.pushReplacementNamed(context, '/login');
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Akun Anda telah dihapus'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          }
+                          // Navigate and show success message
+                          navigator.pushNamedAndRemoveUntil(
+                            '/login',
+                            (route) => false,
+                          );
+                          scaffoldMessenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Akun berhasil dihapus'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        } catch (e) {
+                          Navigator.of(context).pop(); // Close loading dialog
+                          scaffoldMessenger.showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${e.toString()}'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
                         }
-                      } catch (e) {
-                        // Close loading dialog if it's open
-                        if (Navigator.canPop(context)) {
-                          Navigator.of(context).pop();
-                        }
-
-                        String errorMessage = 'Error: ${e.toString()}';
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(errorMessage),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Ya'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
+                      });
+                    } catch (e) {
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Kata sandi salah'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Konfirmasi'),
+                ),
+              ],
+            ),
+      );
+    } finally {
+      passwordController.dispose();
+    }
   }
 
   @override
@@ -421,11 +368,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        title: const Text('Pengaturan'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        title: const Text('Pengaturan', style: TextStyle(color: Colors.black)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -433,142 +380,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _isLoading
               ? const Center(child: CircularProgressIndicator())
               : ListView(
+                padding: const EdgeInsets.all(16),
                 children: [
-                  // Profile section
-                  Container(
-                    color: Colors.blue,
-                    padding: const EdgeInsets.only(bottom: 20.0),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.white,
-                          child: Text(
-                            _username.isNotEmpty
-                                ? _username[0].toUpperCase()
-                                : '',
-                            style: const TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          _username,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          _email,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Account Settings
+                  // Keamanan Section
                   const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: EdgeInsets.symmetric(vertical: 8),
                     child: Text(
-                      'AKUN',
+                      'Keamanan',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                        color: Colors.black,
                       ),
                     ),
                   ),
-
-                  ListTile(
-                    leading: const Icon(Icons.person),
-                    title: const Text('Edit Profil'),
-                    trailing: const Icon(Icons.keyboard_arrow_right),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Edit Profil akan segera hadir'),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const Divider(),
 
                   ListTile(
                     leading: const Icon(Icons.lock),
-                    title: const Text('Keamanan'),
+                    title: const Text('Ubah kata sandi'),
                     trailing: const Icon(Icons.keyboard_arrow_right),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text(
-                            'Pengaturan keamanan akan segera hadir',
-                          ),
+                          content: Text('Ubah kata sandi akan segera hadir'),
                         ),
                       );
                     },
                   ),
-
-                  // App Settings
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-                    child: Text(
-                      'APLIKASI',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-
-                  ListTile(
-                    leading: const Icon(Icons.notifications),
-                    title: const Text('Notifikasi'),
-                    trailing: const Icon(Icons.keyboard_arrow_right),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Pengaturan notifikasi akan segera hadir',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
                   const Divider(),
 
-                  ListTile(
-                    leading: const Icon(Icons.language),
-                    title: const Text('Bahasa'),
-                    trailing: const Icon(Icons.keyboard_arrow_right),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Pengaturan bahasa akan segera hadir'),
-                        ),
-                      );
-                    },
-                  ),
-
-                  // Support
+                  // Dukungan & Masukan Section
                   const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: EdgeInsets.symmetric(vertical: 8),
                     child: Text(
-                      'TENTANG & BANTUAN',
+                      'Dukungan & Masukan',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                        color: Colors.black,
                       ),
                     ),
                   ),
@@ -586,7 +435,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                     },
                   ),
-
                   const Divider(),
 
                   ListTile(
@@ -600,37 +448,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                     },
                   ),
-
                   const Divider(),
 
-                  ListTile(
-                    leading: const Icon(Icons.info),
-                    title: const Text('Tentang Aplikasi'),
-                    trailing: const Icon(Icons.keyboard_arrow_right),
-                    onTap: () {
-                      showAboutDialog(
-                        context: context,
-                        applicationName: 'My Flutter App',
-                        applicationVersion: '1.0.0',
-                        applicationLegalese: '© 2025 My Flutter App',
-                        children: const [
-                          Text(
-                            'Aplikasi yang dibuat dengan Flutter untuk menunjukkan berbagai fitur dan kemampuan framework Flutter.',
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-
-                  // Logout
+                  // Identitas Section
                   const Padding(
-                    padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: EdgeInsets.symmetric(vertical: 8),
                     child: Text(
-                      'AKSI',
+                      'Identitas',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+
+                  ListTile(
+                    leading: const Icon(Icons.group),
+                    title: const Text('Ajukan sebagai Warga Lokal'),
+                    trailing: const Icon(Icons.keyboard_arrow_right),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const PengajuanWarlokScreen(),
+                        ),
+                      );
+                      // Remove the SnackBar message
+                    },
+                  ),
+                  const Divider(),
+
+                  // Tindakan Akun Section
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      'Tindakan Akun',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
                   ),
@@ -645,8 +502,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Icons.arrow_forward,
                       color: Colors.red,
                     ),
-                    onTap:
-                        _showLogoutDialog, // Menampilkan dialog konfirmasi logout
+                    onTap: _showLogoutDialog,
                   ),
 
                   ListTile(
@@ -659,9 +515,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: TextStyle(color: Colors.red),
                     ),
                     trailing: const Icon(Icons.delete, color: Colors.red),
-                    onTap: _showDeleteConfirmation,
+                    onTap:
+                        _showDeleteConfirmation, // Changed to correct function
                   ),
-
+                  const Divider(),
                   const SizedBox(height: 16),
                 ],
               ),

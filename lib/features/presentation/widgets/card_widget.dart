@@ -14,7 +14,7 @@ class CardWidget extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(10),
-        child: Container(
+        child: SizedBox(
           width: _lebar,
           child: Card(
             shape: RoundedRectangleBorder(
@@ -28,6 +28,9 @@ class CardWidget extends StatelessWidget {
                   child: Image.network(imageUrl, fit: BoxFit.cover),
                 ),
                 Positioned(
+                  right: 0,
+                  bottom: 0,
+                  left: 0,
                   child: Container(
                     padding: EdgeInsets.all(5),
                     decoration: BoxDecoration(
@@ -88,9 +91,6 @@ class CardWidget extends StatelessWidget {
                       ],
                     ),
                   ),
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
                 ),
               ],
             ),

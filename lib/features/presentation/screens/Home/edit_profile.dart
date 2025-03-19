@@ -288,7 +288,7 @@ class _EditProfileState extends State<EditProfile> {
                           ),
                         ),
                       ],
-                      onChanged: _negaraChanged,
+                      onChanged: negaraChanged,
                     ),
                     const SizedBox(height: 10),
                     TextField(

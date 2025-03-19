@@ -83,8 +83,10 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/icons/Back-Button.png
+    - assets/icons/frame_emot.png
+    - assets/icons/Star_animasi.png
+    - assets/icons/celebration_image.png
     
-
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../domain/entities/home_action.dart';
 import '../../data/models/home_action.dart';
 
 class HomeProvider with ChangeNotifier {

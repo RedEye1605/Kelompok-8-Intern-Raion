@@ -6,13 +6,11 @@ class HomeActionModel extends HomeAction {
   final Color color;
 
   HomeActionModel({
-    required String id,
-    required String title,
+    required super.id,
+    required super.title,
     required this.icon,
     required this.color,
   }) : super(
-          id: id,
-          title: title,
           iconKey: icon.toString(),
           colorHex: color.value.toRadixString(16),
         );

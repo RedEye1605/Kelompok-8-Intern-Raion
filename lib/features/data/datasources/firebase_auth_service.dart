@@ -19,26 +19,23 @@ class FirebaseAuthService {
     String password,
     String username,
   ) async {
-    try {
-      // Validate username
-      if (!_isValidUsername(username)) {
-        throw Exception(
-          'Username can only contain letters, numbers, and underscores',
-        );
-      }
+    if (username.isEmpty) {
+      throw Exception('Username cannot be empty');
+    }
 
-      // Check if username already exists
-      final usernameDoc =
+    try {
+      // Check if username is already taken
+      final querySnapshot =
           await FirebaseFirestore.instance
-              .collection('usernames')
-              .doc(username.toLowerCase())
+              .collection('users')
+              .where('username', isEqualTo: username.toLowerCase())
               .get();
 
-      if (usernameDoc.exists) {
-        throw Exception('Username already taken');
+      if (querySnapshot.docs.isNotEmpty) {
+        throw Exception('Username is already taken');
       }
 
-      // Create user with email and password
+      // Create user with Firebase Authentication
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -57,17 +54,15 @@ class FirebaseAuthService {
             .doc(firebaseUser.uid)
             .set({
               'email': email,
-              'username': username,
+              'username': username.toLowerCase(), // Save username as a field
               'createdAt': FieldValue.serverTimestamp(),
             });
 
-        // Reserve username
-        await FirebaseFirestore.instance
-            .collection('usernames')
-            .doc(username.toLowerCase())
-            .set({'uid': firebaseUser.uid});
-
-        return UserModel(id: firebaseUser.uid, email: firebaseUser.email ?? '', username: '');
+        return UserModel(
+          id: firebaseUser.uid,
+          email: firebaseUser.email ?? '',
+          username: username,
+        );
       } else {
         throw Exception('User registration failed');
       }
@@ -90,13 +85,6 @@ class FirebaseAuthService {
     }
   }
 
-  bool _isValidUsername(String username) {
-    final RegExp usernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
-    return usernameRegex.hasMatch(username) &&
-        username.length >= 3 &&
-        username.length <= 20;
-  }
-
   // Login
   Future<UserModel> login(String email, String password) async {
     try {
@@ -114,7 +102,20 @@ class FirebaseAuthService {
         throw Exception('Login failed - no user returned');
       }
 
-      return UserModel(id: user.uid, email: user.email ?? '', username: '');
+      // Fetch user data from Firestore
+      final userData =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+      final username = userData.data()?['username'] ?? '';
+
+      return UserModel(
+        id: user.uid,
+        email: user.email ?? '',
+        username: username,
+      );
     } on firebase_auth.FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'user-not-found':
@@ -133,7 +134,7 @@ class FirebaseAuthService {
     }
   }
 
-  //google signin
+  // Google Sign-In
   Future<UserModel> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -159,7 +160,20 @@ class FirebaseAuthService {
         throw Exception('Failed to sign in with Google');
       }
 
-      return UserModel(id: user.uid, email: user.email ?? '', username: '');
+      // Fetch user data from Firestore
+      final userData =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+      final username = userData.data()?['username'] ?? '';
+
+      return UserModel(
+        id: user.uid,
+        email: user.email ?? '',
+        username: username,
+      );
     } on firebase_auth.FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'account-exists-with-different-credential':

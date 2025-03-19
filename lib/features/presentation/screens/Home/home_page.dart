@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
         width: 25,
       ),
       Image.asset(
-        "assets/icons/hotel.png",
+        "assets/icons/Hotel.png",
         color: _selectedIndex == 2 ? Colors.white : Colors.grey,
         width: 25,
       ),

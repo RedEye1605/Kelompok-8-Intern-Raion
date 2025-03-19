@@ -1,3 +1,8 @@
+import 'package:cloudinary_flutter/cloudinary_context.dart';
+import 'package:cloudinary_flutter/cloudinary_object.dart';
+import 'package:cloudinary_flutter/image/cld_image.dart';
+import 'package:cloudinary_url_gen/cloudinary.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
@@ -17,12 +22,15 @@ import 'features/presentation/screens/Settings/settings_screen.dart';
 import 'features/presentation/screens/Settings/rate_us_screen.dart';
 import 'package:my_flutter_app/features/presentation/screens/Settings/pengajuan_warlok_screen.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   di.setupDependencyInjection();
+
+  CloudinaryContext.cloudinary = Cloudinary.fromCloudName(cloudName: 'dak6uyba7');
 
   runApp(const MyApp());
 }
@@ -82,3 +90,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+

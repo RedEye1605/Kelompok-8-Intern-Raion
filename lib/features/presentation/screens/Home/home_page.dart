@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
     const Home(),
     BookmarkPage(),
     const HotelPage(),
-    const ProfilePage(),
+    ProfilePage(),
   ];
 
   @override

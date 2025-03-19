@@ -1,4 +1,4 @@
-# my_flutter_app
+# Malang_Venture
 
 Sebuah aplikasi Flutter yang memanfaatkan Firebase untuk autentikasi (Firebase Auth) dan penyimpanan catatan (Cloud Firestore). Proyek ini menerapkan pola Clean Architecture dengan pembagian domain, data, dan presentation, serta menggunakan [Provider](https://pub.dev/packages/provider) + [GetIt](https://pub.dev/packages/get_it) untuk state management dan dependency injection.
 

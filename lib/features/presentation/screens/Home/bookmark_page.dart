@@ -28,6 +28,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
       length: 5,
       child: Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: Colors.white,
           elevation: 0,
           toolbarHeight: 60,

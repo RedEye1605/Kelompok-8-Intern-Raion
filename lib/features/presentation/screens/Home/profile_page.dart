@@ -12,6 +12,7 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
           'Akun dan Profil',
           style: TextStyle(

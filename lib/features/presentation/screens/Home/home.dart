@@ -71,8 +71,8 @@ class Home extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                IconButton(onPressed: (){}, icon: Image.asset("assets/icons/explore-btn.png")),
-                IconButton(onPressed: (){}, icon: Image.asset("assets/icons/hotel-btn.png")),
+                IconButton(onPressed: () {}, icon: Image.asset("assets/icons/explore-btn.png")),
+                IconButton(onPressed: () => Navigator.pushNamed(context, '/hotelPage'), icon: Image.asset("assets/icons/hotel-btn.png")),
                 IconButton(onPressed: (){}, icon: Image.asset("assets/icons/road-btn.png")),
                 IconButton(onPressed: (){}, icon: Image.asset("assets/icons/transport-btn.png")),
               ],
@@ -82,10 +82,10 @@ class Home extends StatelessWidget {
               child: Text("Sedang Tren",style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.start),
             ),
-            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis" ),
-            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis"),
-            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis"),
-            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kamping Warna Warni', alamat: 'Sidoarjo', price: "Gratis"),
+            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5,),
+            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
+            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
+            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kamping Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
             ],
         ),
       )

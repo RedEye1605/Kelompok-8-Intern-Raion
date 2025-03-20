@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 class AdsBanner extends StatelessWidget {
   AdsBanner({super.key});
 
-  final List<String> imageUrl = [
-    'https://picsum.photos/id/200/1000/300',
-    'https://picsum.photos/id/220/1000/300',
-    'https://picsum.photos/id/240/1000/300',
-    'https://picsum.photos/id/270/1000/300',
+  final List<String> imagePath = [
+    'assets/images/1_poster_iklan.png',
+    'assets/images/2_poster_iklan.png',
+    'assets/images/3_poster_iklan.png',
+    'assets/images/4_poster_iklan.png',
   ];
 
   @override
@@ -17,11 +17,11 @@ class AdsBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: CarouselSlider(
         items:
-            imageUrl
+            imagePath
                 .map(
                   (item) => ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
+                    child: Image.asset(
                       item,
                       fit: BoxFit.cover,
                       width: double.infinity,

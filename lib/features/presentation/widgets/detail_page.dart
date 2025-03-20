@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/order_page.dart';
 
 class DetailPage extends StatefulWidget {
   final String imageUrl;
@@ -244,28 +244,57 @@ class _DetailPageState extends State<DetailPage> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                  
+
                     const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _price(price),
+                        _price(widget.price),
                         ElevatedButton(
-                          onPressed: () => Navigator.pushNamed(context, '/order_page'),
-                          child: Text("Pesan", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.normal, fontFamily: 'Poppins'),),
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(Colors.blue),
-                            minimumSize: WidgetStateProperty.all(Size(200, 50)),
+                          onPressed:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => OrderPage(
+                                        hotelName: widget.title,
+                                        price: widget.price,
+                                      ),
+                                ),
+                              ),
+                          child: const Text(
+                            "Pesan",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.normal,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            minimumSize: const Size(200, 50),
                           ),
                         ),
                       ],
                     ),
                   ],
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _price(String price) {
+    return Text(
+      price,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
       ),
     );
   }

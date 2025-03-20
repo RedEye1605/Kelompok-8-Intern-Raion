@@ -1,10 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/payment_page.dart';
 import 'package:my_flutter_app/features/presentation/widgets/date_picker.dart';
+import 'package:intl/intl.dart';
 
 class OrderPage extends StatefulWidget {
-  const OrderPage({super.key});
+  final String hotelName;
+  final String price;
+  
+
+  const OrderPage({super.key, required this.hotelName, required this.price});
 
   @override
   State<OrderPage> createState() => _OrderPageState();
@@ -19,6 +25,8 @@ class _OrderPageState extends State<OrderPage> {
   final _jumlahKamarController = TextEditingController();
   final _checkInController = TextEditingController();
   final _checkOutController = TextEditingController();
+
+
   
   String? _selectedNegara = "Indonesia";
 
@@ -283,7 +291,8 @@ class _OrderPageState extends State<OrderPage> {
     }
 
     try {
-      await FirebaseFirestore.instance.collection('orders').doc(user.uid).set({
+      await FirebaseFirestore.instance.collection('orders').add({
+      'userId': user.uid, 
       'nama': _namaController.text,
       'email': _emailController.text,
       'negara': _selectedNegara,
@@ -292,7 +301,10 @@ class _OrderPageState extends State<OrderPage> {
       'checkOut': _checkOutController.text,
       'tipeKamar': _tipeKamarController.text,
       'jumlahKamar': int.tryParse(_jumlahKamarController.text) ?? 1,
-      }, SetOptions(merge: true));
+      'hotelName': widget.hotelName,
+      'price': widget.price,
+      'createdAt': FieldValue.serverTimestamp(), 
+      },);
 
       ScaffoldMessenger.of(
         context,
@@ -302,7 +314,25 @@ class _OrderPageState extends State<OrderPage> {
         context,
       ).showSnackBar(SnackBar(content: Text("Gagal menyimpan data: $e")));
     }
-    Navigator.pushNamed(context, '/payment');
+
+    final DateTime checkInDate =
+        DateFormat('yyyy-MM-dd').parse(_checkInController.text);
+    final DateTime checkOutDate =
+        DateFormat('yyyy-MM-dd').parse(_checkOutController.text);
+
+    // Hitung jumlah hari
+    final int jumlahHari = checkOutDate.difference(checkInDate).inDays;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context)=> PaymentPage(
+        hotelName: widget.hotelName,
+        jumlahHari: jumlahHari,
+        tipeKamar: _tipeKamarController.text,
+        pemesan: _namaController.text,
+        price: widget.price,
+      ))
+    );
   }
 
   String _getNomorNegara(String? negara) {

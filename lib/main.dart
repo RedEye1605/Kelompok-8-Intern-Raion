@@ -95,8 +95,6 @@ class MyApp extends StatelessWidget {
           '/hotelPage' : (context) => const HotelPage(),
           '/search_hotel' : (context) => const SearchHotel(),
           '/road_status': (context) => RoadStatusScreen(),
-          '/order_page' : (context) => OrderPage(),
-          '/payment' : (context) => PaymentPage()
         },
       ),
     );

@@ -243,30 +243,36 @@ class PratinjauScreen extends StatelessWidget {
                             ? null
                             : () async {
                               try {
-                                // Rekonstruksi file dari path
-                                File? imageFile;
+                                // UBAH KODE INI: Gunakan semua gambar, bukan hanya satu gambar
+                                List<File> imageFiles = [];
+
                                 if (rumahData['mainImagePaths'] != null &&
                                     rumahData['mainImagePaths'].isNotEmpty) {
-                                  // Rekonstruksi File dari path yang disimpan
-                                  String imagePath =
-                                      rumahData['mainImagePaths'][0];
-                                  imageFile = File(imagePath);
+                                  // Konversi semua path menjadi File objects
+                                  for (String path
+                                      in rumahData['mainImagePaths']) {
+                                    File file = File(path);
+                                    if (await file.exists()) {
+                                      imageFiles.add(file);
+                                      print(
+                                        "📂 Menambahkan file dari path: $path",
+                                      );
+                                    } else {
+                                      print("⚠️ File tidak ditemukan: $path");
+                                    }
+                                  }
                                   print(
-                                    "📂 Menggunakan file dari path: $imagePath",
-                                  );
-                                  print(
-                                    "📂 File exists: ${await imageFile.exists()}",
-                                  );
-                                  print(
-                                    "📂 File size: ${await imageFile.length()} bytes",
+                                    "📂 Total file dari paths: ${imageFiles.length}",
                                   );
                                 } else if (rumahData['mainImages'] != null &&
                                     rumahData['mainImages'].isNotEmpty) {
-                                  // Backup: Gunakan File object langsung jika tersedia
-                                  imageFile = rumahData['mainImages'][0];
-                                  print("📂 Menggunakan file object langsung");
-                                } else {
-                                  print("⚠️ Tidak ada gambar yang tersedia");
+                                  // Gunakan semua File objects langsung
+                                  imageFiles = List<File>.from(
+                                    rumahData['mainImages'],
+                                  );
+                                  print(
+                                    "📂 Menggunakan file objects langsung: ${imageFiles.length} files",
+                                  );
                                 }
 
                                 // Sanitize the data before submitting
@@ -331,10 +337,10 @@ class PratinjauScreen extends StatelessWidget {
                                 });
                                 print("======================");
 
-                                // Use provider to save data
+                                // Use provider to save data - GANTI INI
                                 final result = await provider.createPenginapan(
                                   sanitizedData,
-                                  imageFile, // Gunakan file yang direkonstruksi
+                                  imageFiles, // Passing semua file, bukan hanya satu
                                 );
 
                                 // Handle result

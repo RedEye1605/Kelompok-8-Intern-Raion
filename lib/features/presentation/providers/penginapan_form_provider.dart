@@ -637,7 +637,8 @@ class PenginapanFormProvider with ChangeNotifier {
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
           ),
-          fotoFile: fotoFile,
+          fotoFiles:
+              _mainImages, // Gunakan seluruh list gambar, bukan hanya satu file
         ),
       );
 

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_flutter_app/features/data/models/penginapan_model.dart';
 import 'cloudinary_service.dart';
@@ -5,7 +7,7 @@ import 'cloudinary_service.dart';
 abstract class FirebasePenginapanRemoteDataSource {
   Future<PenginapanModel> createPenginapan(
     PenginapanModel penginapanModel,
-    dynamic imageFile,
+    List<File> imageFiles, // Ubah dari dynamic ke List<File>
   );
   Future<PenginapanModel> updatePenginapan(
     String id,
@@ -30,35 +32,40 @@ class FirebasePenginapanRemoteDataSourceImpl
   @override
   Future<PenginapanModel> createPenginapan(
     PenginapanModel penginapanModel,
-    dynamic imageFile,
+    List<File> imageFiles, // Sekarang tipe sudah sesuai
   ) async {
     try {
       // Debug print awal
       print("⭐ Memulai createPenginapan");
-      print("📸 Type dari imageFile: ${imageFile.runtimeType}");
+      print("📸 Jumlah file untuk diupload: ${imageFiles.length}");
 
-      // Upload gambar ke Cloudinary dengan error handling yang lebih baik
-      String? imageUrl;
-      try {
-        imageUrl = await cloudinaryService.uploadImage(imageFile);
-        print("🌐 Image URL dari Cloudinary: $imageUrl");
-      } catch (e) {
-        print("❌ Error saat upload ke Cloudinary: $e");
-        // Tetap lanjut dengan imageUrl null
+      // Upload semua gambar ke Cloudinary
+      List<String> imageUrls = [];
+
+      for (var imageFile in imageFiles) {
+        try {
+          print("📸 Mencoba upload file: ${imageFile.path}");
+          String? imageUrl = await cloudinaryService.uploadImage(imageFile);
+          if (imageUrl != null) {
+            imageUrls.add(imageUrl);
+            print("🌐 Image URL dari Cloudinary: $imageUrl");
+          }
+        } catch (e) {
+          print("❌ Error saat upload ke Cloudinary: $e");
+          // Lanjutkan ke file berikutnya
+        }
       }
 
       // Safely convert model to JSON with type safety
       final penginapanData = _ensureCorrectDataTypes(penginapanModel.toJson());
 
       // PERBAIKAN: Pastikan fotoPenginapan selalu array dan tidak null
-      if (imageUrl != null && imageUrl.isNotEmpty) {
-        // Ubah dari String? menjadi List<String>
-        penginapanData['fotoPenginapan'] = [imageUrl];
-        print("📸 Foto URL disimpan: $imageUrl");
+      if (imageUrls.isNotEmpty) {
+        penginapanData['fotoPenginapan'] = imageUrls; // Simpan semua URL
+        print("📸 Foto URLs disimpan: $imageUrls");
       } else {
-        // Default empty array jika tidak ada foto
         penginapanData['fotoPenginapan'] = [];
-        print("⚠️ Tidak ada foto yang disimpan (URL null atau kosong)");
+        print("⚠️ Tidak ada foto yang disimpan");
       }
 
       // Verifikasi data sebelum disimpan ke Firestore

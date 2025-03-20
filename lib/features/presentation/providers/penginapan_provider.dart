@@ -86,13 +86,29 @@ class PenginapanProvider with ChangeNotifier {
   // 3. Create penginapan
   Future<PenginapanEntity?> createPenginapan(
     Map<String, dynamic> formData,
-    dynamic fotoFile,
+    dynamic fotoFiles, // Bisa File tunggal atau List<File>
   ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
+      // Konversi ke List<File> jika itu file tunggal
+      List<File> files = [];
+      if (fotoFiles is File) {
+        files.add(fotoFiles);
+        print("📸 Menerima 1 file tunggal");
+      } else if (fotoFiles is List) {
+        for (var file in fotoFiles) {
+          if (file is File) {
+            files.add(file);
+          }
+        }
+        print("📸 Menerima ${files.length} files");
+      } else {
+        print("⚠️ Format fotoFiles tidak didukung: ${fotoFiles?.runtimeType}");
+      }
+
       // Convert form data ke entitas
       final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
       final now = DateTime.now();
@@ -146,7 +162,7 @@ class PenginapanProvider with ChangeNotifier {
 
       // Save to database via use case
       final result = await _createPenginapanUseCase(
-        CreatePenginapanParams(penginapan: penginapan, fotoFile: fotoFile),
+        CreatePenginapanParams(penginapan: penginapan, fotoFiles: files),
       );
 
       // Refresh user's penginapan list if successful
@@ -274,14 +290,14 @@ class PenginapanProvider with ChangeNotifier {
       print('Loading penginapan for user: $userId');
       _userPenginapanList = await _getPenginapanByUserUseCase(userId);
       print('Loaded ${_userPenginapanList.length} penginapan for user');
-      
+
       // Add debug info for each item
       for (var penginapan in _userPenginapanList) {
         print('Penginapan: ${penginapan.namaRumah}, ID: ${penginapan.id}');
         print('UserID in penginapan: ${penginapan.userID}');
         print('Kategori count: ${penginapan.kategoriKamar.length}');
       }
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {

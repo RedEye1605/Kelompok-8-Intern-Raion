@@ -63,7 +63,8 @@ class _HotelPageState extends State<HotelPage>
       length: screens.length,
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(165),
+          preferredSize: const Size.fromHeight(160), // Tinggi AppBar diperbesar
+
           child: AppBar(
             title: const Text(
               "Hotel & Akomodasi",
@@ -72,48 +73,53 @@ class _HotelPageState extends State<HotelPage>
             backgroundColor: Colors.white,
             elevation: 0,
             leading: IconButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
+              onPressed: () => Navigator.pushReplacementNamed(context, '/home'), // Ganti dengan path yang sesuai jika perlu
               icon: Image.asset('assets/icons/Back-Button.png'),
             ),
             flexibleSpace: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 50, 16, 0),
+              padding: const EdgeInsets.fromLTRB(16, 70, 16, 0), // Jarak dari atas
               child: Column(
                 children: [
                   Row(
                     children: [
+                      // Search Bar
                       Expanded(
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.black54),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 16,
-                            ),
-                            backgroundColor: Colors.white,
-                          ),
-                          onPressed:
-                              () =>
-                                  Navigator.pushNamed(context, '/search_hotel'),
-                          child: Row(
-                            children: [
-                              Icon(Icons.search, color: Colors.grey, size: 25),
-                              SizedBox(width: 10),
-                              Text(
-                                'Cari hotel termurah',
-                                style: TextStyle(color: Colors.grey),
+                        child: SizedBox(
+                          height: 35,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: Colors.black54), // Outline color
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                            ],
+                              padding: EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 16,
+                              ),
+                              backgroundColor: Colors.white,
+                            ),
+                            onPressed: () => Navigator.pushNamed(context, '/search_hotel'),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(Icons.search, color: Colors.grey, size: 20),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Cari hotel termurah',
+                                  style: TextStyle(color: Colors.grey, fontFamily: 'Poppins', fontSize: 13),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 10),
+                      // Filter Button
                       IconButton(
                         icon: Image.asset("assets/icons/filter-btn.png"),
                         onPressed: () {},
                       ),
+                      // Sort Button
                       IconButton(
                         icon: Image.asset("assets/icons/sort-btn.png"),
                         onPressed: () {},

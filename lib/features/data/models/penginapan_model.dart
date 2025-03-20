@@ -31,24 +31,45 @@ class PenginapanModel extends PenginapanEntity {
        );
 
   factory PenginapanModel.fromJson(Map<String, dynamic> json) {
-    Map<String, KategoriKamarModel> kategoriKamar = {};
+    // Handle fotoPenginapan field which might be a string or a list
+    List<String> fotoPenginapan = [];
+    if (json['fotoPenginapan'] != null) {
+      if (json['fotoPenginapan'] is String) {
+        // If it's a string, add it to the list
+        fotoPenginapan.add(json['fotoPenginapan']);
+      } else if (json['fotoPenginapan'] is List) {
+        // If it's already a list, convert to List<String>
+        fotoPenginapan = List<String>.from(json['fotoPenginapan']);
+      }
+    }
 
-    if (json['kategoriKamar'] != null) {
-      (json['kategoriKamar'] as Map<String, dynamic>).forEach((key, value) {
-        kategoriKamar[key] = KategoriKamarModel.fromJson(value);
+    // Parse kategoriKamar map safely
+    final Map<String, KategoriKamarModel> kategoriKamarMap = {};
+    if (json['kategoriKamar'] != null && json['kategoriKamar'] is Map) {
+      (json['kategoriKamar'] as Map).forEach((key, value) {
+        if (value is Map<String, dynamic>) {
+          try {
+            kategoriKamarMap[key.toString()] = KategoriKamarModel.fromJson(
+              value,
+            );
+          } catch (e) {
+            print('Error parsing kategori $key: $e');
+          }
+        }
       });
     }
 
+    // Create and return the PenginapanModel
     return PenginapanModel(
-      id: json['id'],
+      id: json['id'] ?? '',
       namaRumah: json['namaRumah'] ?? '',
-      alamatJalan: json['alamatJalan'] ?? '',
-      kecamatan: json['kecamatan'] ?? '',
-      kelurahan: json['kelurahan'] ?? '',
-      kodePos: json['kodePos'] ?? '',
-      linkMaps: json['linkMaps'] ?? '',
-      kategoriKamar: kategoriKamar,
-      fotoPenginapan: List<String>.from(json['fotoPenginapan'] ?? []),
+      alamatJalan: json['alamatJalan'],
+      kecamatan: json['kecamatan'],
+      kelurahan: json['kelurahan'],
+      kodePos: json['kodePos'],
+      linkMaps: json['linkMaps'],
+      kategoriKamar: kategoriKamarMap,
+      fotoPenginapan: fotoPenginapan,
       userID: json['userID'] ?? '',
       createdAt:
           json['createdAt'] != null

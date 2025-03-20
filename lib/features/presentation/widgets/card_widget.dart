@@ -9,6 +9,12 @@ class CardWidget extends StatelessWidget {
   final String price;
   final double rating;
   final int ulasan;
+  // Optional properties
+  final List<String>? additionalImages;
+  final String? deskripsi;
+  final List<String>? fasilitas;
+  final Map<String, dynamic>? kategoriKamar;
+  final String? linkMaps;
 
   const CardWidget({
     super.key,
@@ -18,6 +24,11 @@ class CardWidget extends StatelessWidget {
     required this.price,
     required this.rating,
     required this.ulasan,
+    this.additionalImages,
+    this.deskripsi,
+    this.fasilitas,
+    this.kategoriKamar,
+    this.linkMaps,
   });
 
   @override
@@ -28,14 +39,20 @@ class CardWidget extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DetailPage(
-              imageUrl: imageUrl,
-              title: title,
-              alamat: alamat,
-              price: price,
-              rating: rating,
-              ulasan: ulasan,
-            ),
+            builder:
+                (context) => DetailPage(
+                  imageUrl: imageUrl,
+                  title: title,
+                  alamat: alamat,
+                  price: price,
+                  rating: rating,
+                  ulasan: ulasan,
+                  additionalImages: additionalImages,
+                  deskripsi: deskripsi,
+                  fasilitas: fasilitas,
+                  kategoriKamar: kategoriKamar,
+                  linkMaps: linkMaps,
+                ),
           ),
         );
       },
@@ -53,7 +70,16 @@ class CardWidget extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(30),
-                    child: Image.network(imageUrl, fit: BoxFit.cover),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Image.asset(
+                          'assets/images/placeholder.png',
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    ),
                   ),
                   Positioned(
                     right: 2,
@@ -84,51 +110,81 @@ class CardWidget extends StatelessWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      title,
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        title,
+                                        style: const TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text(rating.toStringAsPrecision(2)),
-                                        const SizedBox(width: 5),
-                                        RatingBarIndicator(
-                                          rating: rating,
-                                          itemBuilder: (context, index) =>
-                                              const Icon(
-                                            Icons.star,
-                                            color: Colors.yellow,
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              rating.toStringAsPrecision(2),
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                            ),
                                           ),
-                                          itemCount: 5,
-                                          itemSize: 18,
-                                          direction: Axis.horizontal,
-                                        ),
-                                        const SizedBox(width: 5),
-                                        Text("($ulasan Ulasan)"),
-                                      ],
-                                    ),
-                                    Row(
-                                      children: [
-                                        Icon(Icons.location_pin, size: 14),
-                                        Text(
-                                          alamat,
-                                          style: TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontSize: 14,
+                                          const SizedBox(width: 5),
+                                          RatingBarIndicator(
+                                            rating: rating,
+                                            itemBuilder:
+                                                (context, index) => const Icon(
+                                                  Icons.star,
+                                                  color: Colors.yellow,
+                                                ),
+                                            itemCount: 5,
+                                            itemSize: 18,
+                                            direction: Axis.horizontal,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                          const SizedBox(width: 5),
+                                          Flexible(
+                                            child: Text(
+                                              "($ulasan Ulasan)",
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                              ),
+                                              overflow:
+                                                  TextOverflow
+                                                      .ellipsis, // Prevent overflow
+                                              maxLines: 1, // Limit to one line
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_pin,
+                                            size: 14,
+                                          ),
+                                          Flexible(
+                                            child: Text(
+                                              alamat,
+                                              style: const TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontSize: 14,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                _price(price),
+                                Flexible(child: _price(price)),
                               ],
                             ),
                           ),
@@ -145,7 +201,6 @@ class CardWidget extends StatelessWidget {
     );
   }
 }
-
 
 // Fungsi untuk menampilkan harga
 Widget _price(String? price) {

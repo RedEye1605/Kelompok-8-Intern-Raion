@@ -128,17 +128,35 @@ class FirebasePenginapanRemoteDataSourceImpl
   @override
   Future<List<PenginapanModel>> getPenginapanByUser(String userId) async {
     try {
+      print('Querying Firestore for userId: $userId');
+
       final querySnapshot =
           await firestore
               .collection('penginapan')
               .where('userID', isEqualTo: userId)
               .get();
-      return querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return PenginapanModel.fromJson(data);
-      }).toList();
+
+      print('Query returned ${querySnapshot.docs.length} documents');
+
+      final results = <PenginapanModel>[];
+
+      for (var doc in querySnapshot.docs) {
+        try {
+          final data = doc.data();
+          data['id'] = doc.id;
+          final model = PenginapanModel.fromJson(data);
+          results.add(model);
+        } catch (e, stackTrace) {
+          print('Error converting document ${doc.id}: $e');
+          print('Document data: ${doc.data()}');
+          print('Stack trace: $stackTrace');
+          // Continue processing other documents
+        }
+      }
+
+      return results;
     } catch (e) {
+      print('Error in getPenginapanByUser: $e');
       rethrow;
     }
   }

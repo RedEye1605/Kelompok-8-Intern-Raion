@@ -106,7 +106,7 @@ class DetailPage extends StatelessWidget {
                       children: [
                         _price(price),
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () => Navigator.pushNamed(context, '/order_page'),
                           child: Text("Pesan", style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.normal, fontFamily: 'Poppins'),),
                           style: ButtonStyle(
                             backgroundColor: WidgetStateProperty.all(Colors.blue),

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/hotel-page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/order_page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/payment_page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/search_hotel.dart';
 import 'package:my_flutter_app/features/presentation/screens/Settings/help_report_screen.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/edit_profile.dart';
@@ -95,6 +97,8 @@ class MyApp extends StatelessWidget {
           '/hotelPage' : (context) => const HotelPage(),
           '/search_hotel' : (context) => const SearchHotel(),
           '/road_status': (context) => RoadStatusScreen(),
+          '/order_page' : (context) => OrderPage(),
+          '/payment' : (context) => PaymentPage()
         },
       ),
     );

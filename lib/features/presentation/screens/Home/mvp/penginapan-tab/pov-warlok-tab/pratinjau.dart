@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_flutter_app/features/presentation/providers/penginapan_provider.dart';
@@ -241,8 +243,31 @@ class PratinjauScreen extends StatelessWidget {
                             ? null
                             : () async {
                               try {
-                                // Get the image file
-                                final fotoFile = rumahData['mainImage'];
+                                // Rekonstruksi file dari path
+                                File? imageFile;
+                                if (rumahData['mainImagePaths'] != null &&
+                                    rumahData['mainImagePaths'].isNotEmpty) {
+                                  // Rekonstruksi File dari path yang disimpan
+                                  String imagePath =
+                                      rumahData['mainImagePaths'][0];
+                                  imageFile = File(imagePath);
+                                  print(
+                                    "📂 Menggunakan file dari path: $imagePath",
+                                  );
+                                  print(
+                                    "📂 File exists: ${await imageFile.exists()}",
+                                  );
+                                  print(
+                                    "📂 File size: ${await imageFile.length()} bytes",
+                                  );
+                                } else if (rumahData['mainImages'] != null &&
+                                    rumahData['mainImages'].isNotEmpty) {
+                                  // Backup: Gunakan File object langsung jika tersedia
+                                  imageFile = rumahData['mainImages'][0];
+                                  print("📂 Menggunakan file object langsung");
+                                } else {
+                                  print("⚠️ Tidak ada gambar yang tersedia");
+                                }
 
                                 // Sanitize the data before submitting
                                 final Map<String, dynamic> sanitizedData =
@@ -309,7 +334,7 @@ class PratinjauScreen extends StatelessWidget {
                                 // Use provider to save data
                                 final result = await provider.createPenginapan(
                                   sanitizedData,
-                                  fotoFile,
+                                  imageFile, // Gunakan file yang direkonstruksi
                                 );
 
                                 // Handle result

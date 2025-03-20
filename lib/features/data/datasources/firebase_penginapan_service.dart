@@ -33,21 +33,58 @@ class FirebasePenginapanRemoteDataSourceImpl
     dynamic imageFile,
   ) async {
     try {
-      String? imageUrl = await cloudinaryService.uploadImage(imageFile);
+      // Debug print awal
+      print("⭐ Memulai createPenginapan");
+      print("📸 Type dari imageFile: ${imageFile.runtimeType}");
+
+      // Upload gambar ke Cloudinary dengan error handling yang lebih baik
+      String? imageUrl;
+      try {
+        imageUrl = await cloudinaryService.uploadImage(imageFile);
+        print("🌐 Image URL dari Cloudinary: $imageUrl");
+      } catch (e) {
+        print("❌ Error saat upload ke Cloudinary: $e");
+        // Tetap lanjut dengan imageUrl null
+      }
 
       // Safely convert model to JSON with type safety
       final penginapanData = _ensureCorrectDataTypes(penginapanModel.toJson());
-      penginapanData['fotoPenginapan'] = imageUrl;
 
+      // PERBAIKAN: Pastikan fotoPenginapan selalu array dan tidak null
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        // Ubah dari String? menjadi List<String>
+        penginapanData['fotoPenginapan'] = [imageUrl];
+        print("📸 Foto URL disimpan: $imageUrl");
+      } else {
+        // Default empty array jika tidak ada foto
+        penginapanData['fotoPenginapan'] = [];
+        print("⚠️ Tidak ada foto yang disimpan (URL null atau kosong)");
+      }
+
+      // Verifikasi data sebelum disimpan ke Firestore
+      print("📋 Data yang akan disimpan ke Firestore:");
+      print("   - namaRumah: ${penginapanData['namaRumah']}");
+      print("   - fotoPenginapan: ${penginapanData['fotoPenginapan']}");
+      print("   - userID: ${penginapanData['userID']}");
+
+      // Simpan ke Firestore
       final docRef = await firestore
           .collection('penginapan')
           .add(penginapanData);
+      print("✅ Data berhasil disimpan dengan ID: ${docRef.id}");
+
+      // Ambil data yang tersimpan untuk verifikasi
       final docSnapshot = await docRef.get();
       final data = docSnapshot.data()!;
-      data['id'] = docSnapshot.id;
+      data['id'] = docRef.id;
+
+      // Verifikasi data tersimpan
+      print("📄 Data tersimpan di Firestore:");
+      print("   - fotoPenginapan: ${data['fotoPenginapan']}");
+
       return PenginapanModel.fromJson(data);
     } catch (e) {
-      print("Error during createPenginapan: $e");
+      print("❌ ERROR during createPenginapan: $e");
       rethrow;
     }
   }

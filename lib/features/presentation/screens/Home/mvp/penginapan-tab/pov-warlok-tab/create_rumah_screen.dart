@@ -965,57 +965,48 @@ class _CreateRumahScreenState extends State<CreateRumahScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     print("Button clicked");
-
+                    
                     // Simpan data kategori yang aktif terlebih dahulu
                     if (formProvider.currentKategori.isNotEmpty) {
                       print("Saving current kategori data");
                       formProvider.saveCurrentKategoriData();
                       print("Current kategori data saved");
                     }
-
+                  
                     // Validasi semua data
                     print("Starting form validation");
                     bool isValid = _formKey.currentState?.validate() ?? false;
                     print("Form validation result: $isValid");
-
+                    
                     if (isValid) {
                       _formKey.currentState?.save();
-
+                  
                       // Validasi gambar
                       print("Checking images: ${formProvider.hasMainImages}");
                       if (!formProvider.hasMainImages) {
-                        formProvider.setImageError(
-                          'Minimal satu foto rumah harus diupload',
-                        );
+                        formProvider.setImageError('Minimal satu foto rumah harus diupload');
                         return;
                       }
-
+                  
                       // Validasi kategori kamar
-                      print(
-                        "Checking categories: ${formProvider.selectedKategori}",
-                      );
+                      print("Checking categories: ${formProvider.selectedKategori}");
                       if (formProvider.selectedKategori.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Minimal satu kategori kamar harus dipilih',
-                            ),
-                          ),
+                          const SnackBar(content: Text('Minimal satu kategori kamar harus dipilih')),
                         );
                         return;
                       }
-
+                  
                       // Get data and navigate
                       try {
                         print("Getting all data");
                         final data = formProvider.getAllData();
                         print("Data retrieved successfully");
-
+                        
                         print("Attempting navigation to PratinjauScreen");
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder:
-                                (context) => PratinjauScreen(rumahData: data),
+                            builder: (context) => PratinjauScreen(rumahData: data),
                           ),
                         );
                       } catch (e) {

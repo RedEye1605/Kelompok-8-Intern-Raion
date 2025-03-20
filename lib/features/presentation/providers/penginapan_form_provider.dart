@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/features/data/models/penginapan_model.dart';
 import 'package:my_flutter_app/features/domain/entities/penginapan.dart';
 import 'package:my_flutter_app/features/domain/usecases/create_penginapan.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -402,6 +403,9 @@ class PenginapanFormProvider with ChangeNotifier {
       };
     });
 
+    // TAMBAHKAN INI: Convert File objects to paths for serialization
+    List<String> mainImagePaths = _mainImages.map((file) => file.path).toList();
+
     return {
       'namaRumah': _namaRumah,
       'alamatJalan': _alamatJalan,
@@ -410,7 +414,9 @@ class PenginapanFormProvider with ChangeNotifier {
       'kodePos': _kodePos,
       'linkMaps': _linkMaps,
       'kategoriKamar': kategoriKamarMap,
-      'mainImages': _mainImages,
+      'mainImages': _mainImages, // Tetap simpan untuk penggunaan lokal
+      'mainImagePaths':
+          mainImagePaths, // TAMBAHKAN INI: Simpan path saja untuk navigasi
     };
   }
 
@@ -571,6 +577,83 @@ class PenginapanFormProvider with ChangeNotifier {
     }
 
     return true;
+  }
+
+  Future<PenginapanEntity?> savePenginapan() async {
+    try {
+      print("📤 Mulai proses simpan penginapan");
+      final data = getAllData();
+      final fotoFile = mainImages.isNotEmpty ? mainImages[0] : null;
+
+      if (fotoFile == null) {
+        print("⚠️ Tidak ada foto untuk diupload");
+        setImageError("Minimal satu foto harus diupload");
+        return null;
+      }
+
+      print("📸 Foto path: ${fotoFile.path}");
+      print("📸 Foto exists: ${await fotoFile.exists()}");
+      print("📸 Foto size: ${await fotoFile.length()} bytes");
+
+      // Dapatkan ID pengguna yang sedang login
+      final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+      if (userId.isEmpty) {
+        print("⚠️ User tidak login");
+        _errorMessage = "Anda harus login terlebih dahulu";
+        notifyListeners();
+        return null;
+      }
+
+      // Siapkan data kategori kamar dengan tipe KategoriKamarModel bukan KategoriKamarEntity
+      final Map<String, KategoriKamarModel> kategoriKamarModels = {};
+      _kategoriMap.forEach((key, value) {
+        kategoriKamarModels[key] = KategoriKamarModel(
+          nama: key,
+          deskripsi: value.deskripsi,
+          fasilitas: value.fasilitas,
+          harga: value.harga,
+          jumlah: value.jumlah,
+          fotoKamar: [], // Foto kamar akan diimplementasikan nanti
+        );
+      });
+
+      // Tampilkan status loading
+      _isLoading = true;
+      notifyListeners();
+
+      final result = await _createPenginapanUseCase(
+        CreatePenginapanParams(
+          penginapan: PenginapanModel(
+            id: '', // Will be set by Firebase
+            namaRumah: data['namaRumah'],
+            alamatJalan: data['alamatJalan'],
+            kecamatan: data['kecamatan'],
+            kelurahan: data['kelurahan'],
+            kodePos: data['kodePos'],
+            linkMaps: data['linkMaps'],
+            kategoriKamar: kategoriKamarModels, // Gunakan model, bukan entity
+            fotoPenginapan: [], // Will be populated after upload
+            userID: userId,
+            createdAt: DateTime.now(),
+            updatedAt: DateTime.now(),
+          ),
+          fotoFile: fotoFile,
+        ),
+      );
+
+      // Reset loading state
+      _isLoading = false;
+      notifyListeners();
+
+      print("✅ Penginapan berhasil disimpan: ${result.id}");
+      return result;
+    } catch (e) {
+      print("❌ Error savePenginapan: $e");
+      _isLoading = false;
+      _errorMessage = "Gagal menyimpan penginapan: ${e.toString()}";
+      notifyListeners();
+      return null;
+    }
   }
 
   @override

@@ -73,7 +73,10 @@ class _DetailPageState extends State<DetailPage> {
                         width: MediaQuery.of(context).size.width,
                         decoration: BoxDecoration(
                           image: DecorationImage(
-                            image: NetworkImage(imageUrl),
+                            image: NetworkImage(
+                              imageUrl +
+                                  "?v=${DateTime.now().millisecondsSinceEpoch}",
+                            ),
                             fit: BoxFit.cover,
                           ),
                         ),

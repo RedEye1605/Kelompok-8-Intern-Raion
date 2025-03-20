@@ -31,15 +31,18 @@ class PenginapanModel extends PenginapanEntity {
        );
 
   factory PenginapanModel.fromJson(Map<String, dynamic> json) {
-    // Handle fotoPenginapan field which might be a string or a list
+    // Tangani fotoPenginapan: bisa string tunggal, list, atau null
     List<String> fotoPenginapan = [];
+
     if (json['fotoPenginapan'] != null) {
       if (json['fotoPenginapan'] is String) {
-        // If it's a string, add it to the list
-        fotoPenginapan.add(json['fotoPenginapan']);
+        // Jika string tunggal, konversi jadi list dengan satu item
+        fotoPenginapan = [json['fotoPenginapan']];
       } else if (json['fotoPenginapan'] is List) {
-        // If it's already a list, convert to List<String>
-        fotoPenginapan = List<String>.from(json['fotoPenginapan']);
+        // Jika sudah list, konversi ke List<String>
+        fotoPenginapan = List<String>.from(
+          json['fotoPenginapan'].map((x) => x.toString()),
+        );
       }
     }
 

@@ -274,14 +274,14 @@ class PenginapanProvider with ChangeNotifier {
       print('Loading penginapan for user: $userId');
       _userPenginapanList = await _getPenginapanByUserUseCase(userId);
       print('Loaded ${_userPenginapanList.length} penginapan for user');
-
+      
       // Add debug info for each item
       for (var penginapan in _userPenginapanList) {
         print('Penginapan: ${penginapan.namaRumah}, ID: ${penginapan.id}');
         print('UserID in penginapan: ${penginapan.userID}');
         print('Kategori count: ${penginapan.kategoriKamar.length}');
       }
-
+      
       _isLoading = false;
       notifyListeners();
     } catch (e) {

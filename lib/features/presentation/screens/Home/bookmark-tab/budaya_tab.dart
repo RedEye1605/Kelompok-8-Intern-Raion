@@ -15,24 +15,14 @@ class BudayaTab extends StatelessWidget {
               title: "Museum Mpu Warna",
               alamat: "Malang",
               price: "Rp 12.000",
+              rating: 5, ulasan: 5
             ),
             CardWidget(
               imageUrl: 'https://picsum.photos/350/250',
               title: "Kampung Batik",
               alamat: "Malang",
               price: "Rp. 10.000",
-            ),
-            CardWidget(
-              imageUrl: 'https://picsum.photos/350/250',
-              title: "Kampung budaya",
-              alamat: "Malang",
-              price: "Rp. 2.000",
-            ),
-            CardWidget(
-              imageUrl: 'https://picsum.photos/350/250',
-              title: "Kampung Warna Warni",
-              alamat: "Malang",
-              price: "Rp. 15.000",
+              rating: 5, ulasan: 5
             ),
           ],
         ),

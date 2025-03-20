@@ -3,6 +3,8 @@ import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/hotel-page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/search_hotel.dart';
 import 'package:my_flutter_app/features/presentation/screens/Settings/help_report_screen.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/edit_profile.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
@@ -90,6 +92,8 @@ class MyApp extends StatelessWidget {
           '/search': (context) => const SearchPage(),
           '/edit_profile': (context) => const EditProfile(),
           '/pengajuan_warlok': (context) => const PengajuanWarlokScreen(),
+          '/hotelPage' : (context) => const HotelPage(),
+          '/search_hotel' : (context) => const SearchHotel()
           '/road_status': (context) => RoadStatusScreen(),
         },
       ),

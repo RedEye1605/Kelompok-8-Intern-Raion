@@ -76,7 +76,9 @@ class Home extends StatelessWidget {
                   icon: Image.asset("assets/icons/explore-btn.png"),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/hotelPage');
+                  },
                   icon: Image.asset("assets/icons/hotel-btn.png"),
                 ),
                 IconButton(
@@ -121,13 +123,11 @@ class Home extends StatelessWidget {
               alamat: 'Sidoarjo',
               price: "Gratis",
             ),
-            CardWidget(
-              imageUrl: 'https://picsum.photos/id/200/1000/400',
-              title: 'Kamping Warna Warni',
-              alamat: 'Sidoarjo',
-              price: "Gratis",
-            ),
-          ],
+            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5,),
+            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
+            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
+            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kamping Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
+            ],
         ),
       ),
     );

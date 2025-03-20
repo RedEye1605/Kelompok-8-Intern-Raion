@@ -10,10 +10,10 @@ class DestinasiTab extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-           CardWidget(imageUrl: 'https://picsum.photos/400/250', title: "Taman Merjo", alamat: "Malang", price: "Gratis",), 
-           CardWidget(imageUrl: 'https://picsum.photos/400/250', title: "Alun-alun Malang", alamat: "Malang", price: "Gratis"), 
-           CardWidget(imageUrl: 'https://picsum.photos/400/250', title: "Candi Singosari", alamat: "Malang", price: "Gratis"), 
-           CardWidget(imageUrl: 'https://picsum.photos/400/250', title: "Jatim park", alamat: "Malang", price: "Gratis"), 
+           CardWidget(imageUrl: 'https://picsum.photos/400/250', title: "Taman Merjo", alamat: "Malang", price: "Gratis",rating: 5, ulasan: 5), 
+           CardWidget(imageUrl: 'https://picsum.photos/400/250', title: "Alun-alun Malang", alamat: "Malang", price: "Gratis",rating: 5, ulasan: 5), 
+           CardWidget(imageUrl: 'https://picsum.photos/400/250', title: "Candi Singosari", alamat: "Malang", price: "Gratis",rating: 5, ulasan: 5), 
+           CardWidget(imageUrl: 'https://picsum.photos/400/250', title: "Jatim park", alamat: "Malang", price: "Gratis",rating: 5, ulasan: 5), 
           ],
         ),
       ),

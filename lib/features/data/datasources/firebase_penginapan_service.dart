@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_flutter_app/features/data/models/penginapan_model.dart';
 import 'cloudinary_service.dart';
@@ -5,7 +7,7 @@ import 'cloudinary_service.dart';
 abstract class FirebasePenginapanRemoteDataSource {
   Future<PenginapanModel> createPenginapan(
     PenginapanModel penginapanModel,
-    dynamic imageFile,
+    List<File> imageFiles, // Ubah dari dynamic ke List<File>
   );
   Future<PenginapanModel> updatePenginapan(
     String id,
@@ -30,24 +32,66 @@ class FirebasePenginapanRemoteDataSourceImpl
   @override
   Future<PenginapanModel> createPenginapan(
     PenginapanModel penginapanModel,
-    dynamic imageFile,
+    List<File> imageFiles, // Sekarang tipe sudah sesuai
   ) async {
     try {
-      String? imageUrl = await cloudinaryService.uploadImage(imageFile);
+      // Debug print awal
+      print("⭐ Memulai createPenginapan");
+      print("📸 Jumlah file untuk diupload: ${imageFiles.length}");
+
+      // Upload semua gambar ke Cloudinary
+      List<String> imageUrls = [];
+
+      for (var imageFile in imageFiles) {
+        try {
+          print("📸 Mencoba upload file: ${imageFile.path}");
+          String? imageUrl = await cloudinaryService.uploadImage(imageFile);
+          if (imageUrl != null) {
+            imageUrls.add(imageUrl);
+            print("🌐 Image URL dari Cloudinary: $imageUrl");
+          }
+        } catch (e) {
+          print("❌ Error saat upload ke Cloudinary: $e");
+          // Lanjutkan ke file berikutnya
+        }
+      }
 
       // Safely convert model to JSON with type safety
       final penginapanData = _ensureCorrectDataTypes(penginapanModel.toJson());
-      penginapanData['fotoPenginapan'] = imageUrl;
 
+      // PERBAIKAN: Pastikan fotoPenginapan selalu array dan tidak null
+      if (imageUrls.isNotEmpty) {
+        penginapanData['fotoPenginapan'] = imageUrls; // Simpan semua URL
+        print("📸 Foto URLs disimpan: $imageUrls");
+      } else {
+        penginapanData['fotoPenginapan'] = [];
+        print("⚠️ Tidak ada foto yang disimpan");
+      }
+
+      // Verifikasi data sebelum disimpan ke Firestore
+      print("📋 Data yang akan disimpan ke Firestore:");
+      print("   - namaRumah: ${penginapanData['namaRumah']}");
+      print("   - fotoPenginapan: ${penginapanData['fotoPenginapan']}");
+      print("   - userID: ${penginapanData['userID']}");
+
+      // Simpan ke Firestore
       final docRef = await firestore
           .collection('penginapan')
           .add(penginapanData);
+      print("✅ Data berhasil disimpan dengan ID: ${docRef.id}");
+
+      // Ambil data yang tersimpan untuk verifikasi
       final docSnapshot = await docRef.get();
       final data = docSnapshot.data()!;
-      data['id'] = docSnapshot.id;
+      data['id'] = docRef.id;
+
+      // Verifikasi data tersimpan
+      print("📄 Data tersimpan di Firestore:");
+      print("   - fotoPenginapan: ${data['fotoPenginapan']}");
+
       return PenginapanModel.fromJson(data);
     } catch (e) {
-      print("Error during createPenginapan: $e");
+      print("❌ ERROR during createPenginapan: $e");
       rethrow;
     }
   }
@@ -128,17 +172,35 @@ class FirebasePenginapanRemoteDataSourceImpl
   @override
   Future<List<PenginapanModel>> getPenginapanByUser(String userId) async {
     try {
+      print('Querying Firestore for userId: $userId');
+
       final querySnapshot =
           await firestore
               .collection('penginapan')
               .where('userID', isEqualTo: userId)
               .get();
-      return querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return PenginapanModel.fromJson(data);
-      }).toList();
+
+      print('Query returned ${querySnapshot.docs.length} documents');
+
+      final results = <PenginapanModel>[];
+
+      for (var doc in querySnapshot.docs) {
+        try {
+          final data = doc.data();
+          data['id'] = doc.id;
+          final model = PenginapanModel.fromJson(data);
+          results.add(model);
+        } catch (e, stackTrace) {
+          print('Error converting document ${doc.id}: $e');
+          print('Document data: ${doc.data()}');
+          print('Stack trace: $stackTrace');
+          // Continue processing other documents
+        }
+      }
+
+      return results;
     } catch (e) {
+      print('Error in getPenginapanByUser: $e');
       rethrow;
     }
   }

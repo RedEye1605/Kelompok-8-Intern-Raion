@@ -1,101 +1,246 @@
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
-
-
-
-
-class DetailPage extends StatelessWidget {
+class DetailPage extends StatefulWidget {
   final String imageUrl;
   final String title;
   final String alamat;
   final String price;
   final double rating;
   final int ulasan;
+  final List<String>? additionalImages;
+  final Map<String, dynamic>? kategoriKamar;
+  final String? deskripsi;
+  final List<String>? fasilitas;
+  final String? linkMaps;
 
   const DetailPage({
-    super.key,
+    Key? key,
     required this.imageUrl,
     required this.title,
     required this.alamat,
     required this.price,
     required this.rating,
     required this.ulasan,
-  });
+    this.additionalImages,
+    this.kategoriKamar,
+    this.deskripsi,
+    this.fasilitas,
+    this.linkMaps,
+  }) : super(key: key);
+
+  @override
+  State<DetailPage> createState() => _DetailPageState();
+}
+
+class _DetailPageState extends State<DetailPage> {
+  int _currentImageIndex = 0;
+
+  List<String> get allImages {
+    List<String> images = [widget.imageUrl];
+    if (widget.additionalImages != null &&
+        widget.additionalImages!.isNotEmpty) {
+      images.addAll(widget.additionalImages!);
+    }
+    return images;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Gambar di bagian atas
-          Positioned.fill(child: Image.network(imageUrl, fit: BoxFit.cover)),
-          // Background overlay agar teks terlihat jelas
-          Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(0.3)),
+          // Carousel image slider
+          CarouselSlider(
+            options: CarouselOptions(
+              height: MediaQuery.of(context).size.height * 0.6,
+              viewportFraction: 1.0,
+              enlargeCenterPage: false,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _currentImageIndex = index;
+                });
+              },
+              autoPlay: allImages.length > 1,
+              autoPlayInterval: const Duration(seconds: 5),
+            ),
+            items:
+                allImages.map((imageUrl) {
+                  return Builder(
+                    builder: (BuildContext context) {
+                      return Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage(
+                              imageUrl +
+                                  "?v=${DateTime.now().millisecondsSinceEpoch}",
+                            ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.1),
+                                Colors.black.withOpacity(0.5),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }).toList(),
           ),
-          // Tombol back
+
+          // Image indicator dots
+          if (allImages.length > 1)
+            Positioned(
+              bottom: MediaQuery.of(context).size.height * 0.42,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children:
+                    allImages.asMap().entries.map((entry) {
+                      return Container(
+                        width: 8.0,
+                        height: 8.0,
+                        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color:
+                              _currentImageIndex == entry.key
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.5),
+                        ),
+                      );
+                    }).toList(),
+              ),
+            ),
+
+          // Back button
           Positioned(
             top: 40,
             left: 16,
             child: IconButton(
-              icon: Image.asset('assets/icons/detailBack.png'),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () {
                 Navigator.pop(context);
               },
             ),
           ),
+
+          // Bookmark button
           Positioned(
             top: 40,
             right: 16,
             child: IconButton(
-              icon: Image.asset('assets/icons/Bookmark_Button.png'),
+              icon: const Icon(Icons.bookmark_border, color: Colors.white),
               onPressed: () {},
             ),
           ),
-          // Informasi hotel di bawah
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(50)),
-              ),
-              height: 250, // Menutupi sebagian gambar
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+
+          // Draggable Sheet for Details
+          DraggableScrollableSheet(
+            initialChildSize: 0.4,
+            minChildSize: 0.4,
+            maxChildSize: 0.95,
+            builder: (context, scrollController) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
                   children: [
-                    SizedBox(height: 20),
+                    // Pull handle indicator
+                    Center(
+                      child: Container(
+                        width: 50,
+                        height: 5,
+                        margin: const EdgeInsets.only(bottom: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+
+                    // Title and Rating
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            widget.title,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         Row(
                           children: [
-                            Icon(Icons.star, color: Colors.yellow),
-                            const SizedBox(width: 5),
-                            Text(rating.toStringAsPrecision(2)),
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 4),
                             Text(
-                              "($ulasan Ulasan)",
-                              style: TextStyle(color: Colors.grey),
+                              widget.rating.toString(),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              " (${widget.ulasan})",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey,
+                              ),
                             ),
                           ],
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+
+                    const SizedBox(height: 12),
+
+                    // Address
                     Row(
                       children: [
-                        const Icon(Icons.location_on, color: Colors.black),
-                        Text(alamat),
+                        const Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            widget.alamat,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -124,56 +269,4 @@ class DetailPage extends StatelessWidget {
       ),
     );
   }
-}
-
-Widget _price(String? price) {
-  if (price != "Gratis" && price!.isNotEmpty) {
-    return Row(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  "Rp $price",
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 24,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text("/malam"),
-              ],
-            ),
-            Text(
-              "Tersisa 2 Kamar",
-              style: TextStyle(color: Colors.grey),
-              textAlign: TextAlign.start,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-  if (price == "Gratis" || price == null) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Gratis",
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 24,
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text("Tersisa 2 Kamar"),
-      ],
-    );
-  }
-
-  return SizedBox();
 }

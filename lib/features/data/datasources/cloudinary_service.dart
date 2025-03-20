@@ -7,33 +7,51 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class CloudinaryService {
   final cloudinary = CloudinaryPublic(
     'dak6uyba7', // Cloud name
-    'testing' // Upload preset
+    'testing', // Upload preset
   );
 
   Future<String?> uploadImage(dynamic imageFile) async {
     try {
-      if (kIsWeb) {
-        return await _uploadWebImage(imageFile);
+      print("📸 Memulai upload image dengan tipe: ${imageFile.runtimeType}");
+
+      if (imageFile is File) {
+        return await _uploadMobileImage(imageFile);
+      } else if (imageFile is String) {
+        // Handle base64 atau URL string jika perlu
+        print("⚠️ imageFile adalah String, bukan File");
+        return null;
       } else {
-        return await _uploadMobileImage(imageFile as File);
+        print("⚠️ Format file tidak didukung: ${imageFile.runtimeType}");
+        return null;
       }
     } catch (e) {
-      print("Upload Error: $e");
+      print("❌ Error dalam uploadImage: $e");
       return null;
     }
   }
 
   Future<String?> _uploadMobileImage(File imageFile) async {
     try {
+      print("📸 Uploading image dari path: ${imageFile.path}");
+
+      // Verifikasi file ada dan bisa diakses
+      if (!await imageFile.exists()) {
+        print("❌ File tidak ditemukan: ${imageFile.path}");
+        return null;
+      }
+
+      // Upload ke Cloudinary
       final response = await cloudinary.uploadFile(
         CloudinaryFile.fromFile(
           imageFile.path,
           resourceType: CloudinaryResourceType.Image,
         ),
       );
+
+      print("✅ Upload berhasil! URL: ${response.secureUrl}");
       return response.secureUrl;
     } catch (e) {
-      print("Mobile Upload Error: $e");
+      print("❌ Error _uploadMobileImage: $e");
       return null;
     }
   }

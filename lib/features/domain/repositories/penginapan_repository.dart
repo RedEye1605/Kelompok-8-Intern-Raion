@@ -5,7 +5,7 @@ abstract class PenginapanRepository {
   Future<List<PenginapanEntity>> getAllPenginapan();
   Future<PenginapanEntity> createPenginapan(
     PenginapanEntity penginapan,
-    dynamic fotoFile,
+    List<File> fotoFiles, // Ubah dari dynamic ke List<File>
   );
   Future<PenginapanEntity> updatePenginapan(
     String id,

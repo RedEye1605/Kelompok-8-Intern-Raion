@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_flutter_app/features/presentation/providers/penginapan_provider.dart';
@@ -241,8 +243,37 @@ class PratinjauScreen extends StatelessWidget {
                             ? null
                             : () async {
                               try {
-                                // Get the image file
-                                final fotoFile = rumahData['mainImage'];
+                                // UBAH KODE INI: Gunakan semua gambar, bukan hanya satu gambar
+                                List<File> imageFiles = [];
+
+                                if (rumahData['mainImagePaths'] != null &&
+                                    rumahData['mainImagePaths'].isNotEmpty) {
+                                  // Konversi semua path menjadi File objects
+                                  for (String path
+                                      in rumahData['mainImagePaths']) {
+                                    File file = File(path);
+                                    if (await file.exists()) {
+                                      imageFiles.add(file);
+                                      print(
+                                        "📂 Menambahkan file dari path: $path",
+                                      );
+                                    } else {
+                                      print("⚠️ File tidak ditemukan: $path");
+                                    }
+                                  }
+                                  print(
+                                    "📂 Total file dari paths: ${imageFiles.length}",
+                                  );
+                                } else if (rumahData['mainImages'] != null &&
+                                    rumahData['mainImages'].isNotEmpty) {
+                                  // Gunakan semua File objects langsung
+                                  imageFiles = List<File>.from(
+                                    rumahData['mainImages'],
+                                  );
+                                  print(
+                                    "📂 Menggunakan file objects langsung: ${imageFiles.length} files",
+                                  );
+                                }
 
                                 // Sanitize the data before submitting
                                 final Map<String, dynamic> sanitizedData =
@@ -306,10 +337,10 @@ class PratinjauScreen extends StatelessWidget {
                                 });
                                 print("======================");
 
-                                // Use provider to save data
+                                // Use provider to save data - GANTI INI
                                 final result = await provider.createPenginapan(
                                   sanitizedData,
-                                  fotoFile,
+                                  imageFiles, // Passing semua file, bukan hanya satu
                                 );
 
                                 // Handle result

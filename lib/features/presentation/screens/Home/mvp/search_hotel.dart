@@ -51,7 +51,8 @@ class _SearchHotelState extends State<SearchHotel> {
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Cari apapun di sini',
-                hintStyle: TextStyle(color: Colors.black54),
+                hintStyle: TextStyle(color: Colors.black54,),
+                hintTextDirection: TextDirection.ltr,
                 prefixIcon: Icon(Icons.search, color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),

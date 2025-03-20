@@ -28,7 +28,7 @@ class _HotelPageState extends State<HotelPage>
       length: screens.length,
       child: Scaffold(
         appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(165), // Tinggi AppBar diperbesar
+          preferredSize: const Size.fromHeight(160), // Tinggi AppBar diperbesar
           child: AppBar(
             title: const Text(
               "Hotel & Akomodasi",
@@ -37,76 +37,85 @@ class _HotelPageState extends State<HotelPage>
             backgroundColor: Colors.white,
             elevation: 0,
             leading: IconButton(onPressed: () => Navigator.pop(context), icon: Image.asset('assets/icons/Back-Button.png')),
-            flexibleSpace: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                16,
-                50,
-                16,
-                0,
-              ), // Jarak dari atas
-              child: Column(
-                children: [
-                  Row(
+            flexibleSpace: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    70,
+                    16,
+                    0,
+                  ), // Jarak dari atas
+                  child: Column(
                     children: [
-                      // Search Bar
-                      Expanded(
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                              color: Colors.black54,
-                            ), // Outline color
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 16,
-                            ),
-                            backgroundColor: Colors.white,
-                          ),
-                          onPressed:
-                              () =>
-                                  Navigator.pushNamed(context, '/search_hotel'),
-                          child: Row(
-                            children: [
-                              Icon(Icons.search, color: Colors.grey, size: 25),
-                              SizedBox(width: 10),
-                              Text(
-                                'Cari hotel termurah',
-                                style: TextStyle(color: Colors.grey),
+                      Row(
+                        children: [
+                          // Search Bar
+                          Expanded(
+                            child: SizedBox(
+                              height: 35,
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: Colors.black54,
+                                  ), // Outline color
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 12,
+                                    horizontal: 16,
+                                  ),
+                                  backgroundColor: Colors.white,
+                                ),
+                                onPressed:
+                                    () =>
+                                        Navigator.pushNamed(context, '/search_hotel'),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.search, color: Colors.grey, size: 20),
+                                    SizedBox(width: 10),
+                                    Text(
+                                      'Cari hotel termurah',
+                                      style: TextStyle(color: Colors.grey, fontFamily: 'Poppins', fontSize: 13),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ],
+                            ),
+                            //  TextField(
+                            //   decoration: InputDecoration(
+                            //     hintText: 'Cari hotel termurah',
+                            //     prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                            //     filled: true,
+                            //     fillColor: Colors.white,
+                            //     border: OutlineInputBorder(
+                            //       borderRadius: BorderRadius.circular(30),
+                            //       borderSide: BorderSide(color: Colors.grey),
+                            //     ),
+                            //     contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                            //   ),
+                            // ),
                           ),
-                        ),
-                        //  TextField(
-                        //   decoration: InputDecoration(
-                        //     hintText: 'Cari hotel termurah',
-                        //     prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                        //     filled: true,
-                        //     fillColor: Colors.white,
-                        //     border: OutlineInputBorder(
-                        //       borderRadius: BorderRadius.circular(30),
-                        //       borderSide: BorderSide(color: Colors.grey),
-                        //     ),
-                        //     contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                        //   ),
-                        // ),
-                      ),
-                      const SizedBox(width: 10),
-                      // Filter Button
-                      IconButton(
-                        icon: Image.asset("assets/icons/filter-btn.png"),
-                        onPressed: () {},
-                      ),
-                      // Sort Button
-                      IconButton(
-                        icon: Image.asset("assets/icons/sort-btn.png"),
-                        onPressed: () {},
+                          const SizedBox(width: 10),
+                          // Filter Button
+                          IconButton(
+                            icon: Image.asset("assets/icons/filter-btn.png"),
+                            onPressed: () {},
+                          ),
+                          // Sort Button
+                          IconButton(
+                            icon: Image.asset("assets/icons/sort-btn.png"),
+                            onPressed: () {},
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             bottom: PreferredSize(
               preferredSize: Size.fromHeight(50),

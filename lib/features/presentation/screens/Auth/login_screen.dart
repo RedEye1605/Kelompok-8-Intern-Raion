@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/custom_text_field.dart';
-import 'register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:google_sign_in/google_sign_in.dart';
 

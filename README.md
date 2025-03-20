@@ -1,4 +1,4 @@
-# my_flutter_app
+# Malang_Venture
 
 Sebuah aplikasi Flutter yang memanfaatkan Firebase untuk autentikasi (Firebase Auth) dan penyimpanan catatan (Cloud Firestore). Proyek ini menerapkan pola Clean Architecture dengan pembagian domain, data, dan presentation, serta menggunakan [Provider](https://pub.dev/packages/provider) + [GetIt](https://pub.dev/packages/get_it) untuk state management dan dependency injection.
 
@@ -127,6 +127,8 @@ Buka Xcode untuk proses deployment ke App Store
 5. Buat Pull Request
 
 ## Kontak
-Rhendy Saragih - [@rhendysrg_](https://instagram.com/rhendysrg_)
+- **Rhendy Saragih** - [@rhendysrg_](https://instagram.com/rhendysrg_)
+- **Ihtishamul Hasan** - [@_shamhasan](https://instagram.com/_shamhasan)
+
 
 Project Link: [https://github.com/RedEye1605/Kelompok-8-Intern-Raion](https://github.com/RedEye1605/Kelompok-8-Intern-Raion)

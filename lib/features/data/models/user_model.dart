@@ -1,17 +1,29 @@
 import 'package:my_flutter_app/features/domain/entities/user.dart';
 
 class UserModel extends UserEntity {
-  UserModel({required super.id, required super.email, required super.username});
+  UserModel({
+    required String id,
+    required String email,
+    required String nama,
+  }) : super(
+          id: id,
+          email: email,
+          nama: nama,
+        );
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['uid'],
+      id: json['id'],
       email: json['email'],
-      username: json['username'],
+      nama: json['nama'], 
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'uid': id, 'email': email, 'username': username};
+    return {
+      'id': id,
+      'email': email,
+      'nama': nama,
+    };
   }
 }

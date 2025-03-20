@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/features/domain/repositories/auth_repository.dart';
 import 'package:my_flutter_app/features/domain/usecases/login_user.dart';
 import 'package:my_flutter_app/features/domain/usecases/login_with_google.dart';
 import 'package:my_flutter_app/features/domain/usecases/register_user.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthProvider with ChangeNotifier {
   final LoginUser loginUser;
@@ -14,6 +13,7 @@ class AuthProvider with ChangeNotifier {
   final LoginWithGoogle loginWithGoogle;
   final firebase_auth.FirebaseAuth _firebaseAuth =
       firebase_auth.FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   String? _userId;
   bool _isLoading = false;
@@ -56,16 +56,24 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> register(String email, String password, String username) async {
+  Future<void> register(String email, String password, String nama) async {
     _setLoading(true);
     _clearError();
     try {
-      final user = await registerUser(
-        RegisterParams(email: email, password: password, username: username),
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-      _userId = user.id;
+
+      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+        'email': email,
+        'nama': nama,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      _userId = userCredential.user!.uid;
       notifyListeners();
-      // Hapus pembuatan dokumen di sini karena sudah dilakukan di FirebaseAuthService
     } catch (e) {
       _setError(e.toString());
       rethrow; // Rethrow to handle in UI

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_flutter_app/features/domain/entities/road_status.dart';
 import 'package:my_flutter_app/features/presentation/widgets/road_status_card.dart';
-import 'package:my_flutter_app/features/presentation/screens/road-status/create_road_status_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/road-status-tab/create_road_status_screen.dart';
 import 'package:my_flutter_app/features/presentation/providers/road_status_provider.dart';
 
 class RoadStatusScreen extends StatefulWidget {
@@ -165,14 +165,17 @@ class _RoadStatusScreenState extends State<RoadStatusScreen> {
           },
         ),
       ),
-      floatingActionButton: GestureDetector(
-        onTap: () {
-          _navigateToCreateScreen(context);
-        },
-        child: Image.asset(
-          "assets/icons/Group 385.png",
-          width: 70, // Ukuran tombol
-          height: 70,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 17, right: 17),
+        child: InkWell(
+          onTap: () {
+            _navigateToCreateScreen(context);
+          },
+          child: Image.asset(
+            "assets/icons/Group 385.png",
+            width: 75, 
+            height: 75,
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

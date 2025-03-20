@@ -10,6 +10,7 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         toolbarHeight: 70,
@@ -129,11 +130,7 @@ class Home extends StatelessWidget {
               rating: 3,
               ulasan: 5,
             ),
-            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5,),
-            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
-            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kampung Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
-            CardWidget(imageUrl: 'https://picsum.photos/id/200/1000/400',title:'Kamping Warna Warni', alamat: 'Sidoarjo', price: "Gratis",rating: 5, ulasan: 5),
-            ],
+          ],
         ),
       ),
     );

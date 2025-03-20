@@ -2,6 +2,8 @@ import 'package:cloudinary_flutter/cloudinary_context.dart';
 import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:my_flutter_app/features/presentation/providers/penginapan_form_provider.dart';
+import 'package:my_flutter_app/features/presentation/providers/penginapan_provider.dart';
 import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/hotel-page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/order_page.dart';
@@ -23,7 +25,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'features/presentation/screens/Settings/settings_screen.dart';
 import 'features/presentation/screens/Settings/rate_us_screen.dart';
 import 'package:my_flutter_app/features/presentation/screens/Settings/pengajuan_warlok_screen.dart';
-import 'package:my_flutter_app/features/presentation/screens/road-status/road_status_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/road-status-tab/road_status_screen.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 void main() async {
@@ -52,13 +54,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
         ChangeNotifierProvider(create: (_) => di.sl<HomeProvider>()),
-        ChangeNotifierProvider(
-          create:
-              (_) =>
-                  di
-                      .sl<
-                        RoadStatusProvider
-                      >(), // Gunakan sl untuk RoadStatusProvider
+        ChangeNotifierProvider(create: (_) => di.sl<RoadStatusProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<PenginapanProvider>()),
+        ChangeNotifierProvider(create: (_) => di.sl<PenginapanFormProvider>(),
         ),
       ],
       child: MaterialApp(

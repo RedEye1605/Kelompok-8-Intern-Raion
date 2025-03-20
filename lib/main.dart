@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
           '/edit_profile': (context) => const EditProfile(),
           '/pengajuan_warlok': (context) => const PengajuanWarlokScreen(),
           '/hotelPage' : (context) => const HotelPage(),
-          '/search_hotel' : (context) => const SearchHotel()
+          '/search_hotel' : (context) => const SearchHotel(),
           '/road_status': (context) => RoadStatusScreen(),
         },
       ),

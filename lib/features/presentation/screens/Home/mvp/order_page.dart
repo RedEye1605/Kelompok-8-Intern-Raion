@@ -382,6 +382,36 @@ class _OrderPageState extends State<OrderPage> {
       return;
     }
 
+    // Add debug to verify values
+    print("Penginapan ID: ${widget.penginapan.id}");
+    print("Owner ID: ${widget.penginapan.userID}");
+
+    // Fix: If penginapanId is null or empty, fetch it properly
+    String penginapanId = widget.penginapan.id ?? '';
+    String ownerId = widget.penginapan.userID;
+
+    // If we don't have valid IDs, try to look up the actual accommodation
+    if (penginapanId.isEmpty || ownerId.isEmpty) {
+      try {
+        // Search for the penginapan by name as a fallback
+        final querySnapshot =
+            await FirebaseFirestore.instance
+                .collection('penginapan')
+                .where('namaRumah', isEqualTo: widget.penginapan.namaRumah)
+                .limit(1)
+                .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          final doc = querySnapshot.docs.first;
+          penginapanId = doc.id;
+          ownerId = doc.data()['userID'] ?? '';
+          print("Found penginapan by name. ID: $penginapanId, Owner: $ownerId");
+        }
+      } catch (e) {
+        print("Error looking up penginapan: $e");
+      }
+    }
+
     try {
       await FirebaseFirestore.instance.collection('orders').add({
         'userId': user.uid,
@@ -396,6 +426,9 @@ class _OrderPageState extends State<OrderPage> {
         'hotelName': widget.penginapan.namaRumah,
         'price': _currentPrice,
         'createdAt': FieldValue.serverTimestamp(),
+        'penginapanId': penginapanId, // Use our fixed value
+        'ownerId': ownerId, // Use our fixed value
+        'status': 'pending',
       });
 
       ScaffoldMessenger.of(
@@ -407,6 +440,7 @@ class _OrderPageState extends State<OrderPage> {
       ).showSnackBar(SnackBar(content: Text("Gagal menyimpan data: $e")));
     }
 
+    // Rest of your code...
     final DateTime checkInDate = DateFormat(
       'yyyy-MM-dd',
     ).parse(_checkInController.text);

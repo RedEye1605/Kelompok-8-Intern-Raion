@@ -278,11 +278,11 @@ class _DetailPageState extends State<DetailPage> {
             ),
           ),
 
-          // Draggable Sheet for Details 
+          // Draggable Sheet for Details
           DraggableScrollableSheet(
             initialChildSize: 0.37,
-            minChildSize: 0.3, 
-            maxChildSize: 0.9, 
+            minChildSize: 0.3,
+            maxChildSize: 0.9,
             builder: (context, scrollController) {
               return Container(
                 decoration: const BoxDecoration(
@@ -660,7 +660,7 @@ class _DetailPageState extends State<DetailPage> {
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // Cek ketersediaan data untuk membuat pesanan
                       if (widget.penginapan == null) {
                         // Jika tidak ada objek penginapan, coba buat dari properti yang tersedia
@@ -722,12 +722,12 @@ class _DetailPageState extends State<DetailPage> {
                       } else {
                         // Gunakan data penginapan yang sudah ada
                         try {
+                          // Use the penginapan entity directly from the widget
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder:
-                                  (context) =>
-                                      OrderPage(penginapan: widget.penginapan!),
+                              builder: (context) =>
+                                  OrderPage(penginapan: widget.penginapan!),
                             ),
                           );
                         } catch (e) {

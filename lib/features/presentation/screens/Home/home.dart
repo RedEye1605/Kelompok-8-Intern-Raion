@@ -45,7 +45,7 @@ class Home extends StatelessWidget {
             const SizedBox(width: 10),
             // Icon lingkaran 1
             GestureDetector(
-              onTap: () {},
+              onTap: () => Navigator.pushNamed(context, '/reward'),
               child: CircleAvatar(
                 backgroundColor: Colors.grey[300],
                 radius: 20,

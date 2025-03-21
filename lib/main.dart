@@ -11,6 +11,7 @@ import 'package:my_flutter_app/features/presentation/screens/Home/mvp/payment_me
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/payment_page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/search_hotel.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/status_page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/reward_page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Settings/help_report_screen.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/edit_profile.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/home_page.dart';
@@ -99,6 +100,7 @@ class MyApp extends StatelessWidget {
           '/road_status': (context) => RoadStatusScreen(),
           '/status_page' : (context) => const StatusPage(),
           '/payment_method' : (context) => PaymentMethod(),
+          '/reward' : (context) => const RewardPage(),
         },
       ),
     );

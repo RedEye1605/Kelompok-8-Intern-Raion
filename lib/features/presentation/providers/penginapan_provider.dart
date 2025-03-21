@@ -183,100 +183,109 @@ class PenginapanProvider with ChangeNotifier {
   }
 
   // 4. Update penginapan
-  Future<PenginapanEntity?> updatePenginapan({
+  Future<void> updatePenginapan({
     required String id,
     required Map<String, dynamic> formData,
+    required List<File> images,
   }) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
     try {
-      // Get existing penginapan first to preserve data not in the form
-      final existingPenginapan = _selectedPenginapan;
-      if (existingPenginapan == null) {
-        throw Exception('No penginapan selected for update');
+      _isLoading = true;
+      notifyListeners();
+
+      // Get existing image URLs to keep
+      List<String> existingImageUrls = [];
+      if (formData['existingImageUrls'] != null) {
+        existingImageUrls = List<String>.from(formData['existingImageUrls']);
       }
 
-      // Proses data kategori kamar
+      // Process category room data
       final Map<String, KategoriKamarEntity> kategoriKamarMap = {};
-      (formData['kategoriKamar'] as Map<String, dynamic>).forEach((key, value) {
-        kategoriKamarMap[key] = KategoriKamarEntity(
-          nama: key,
-          deskripsi: value['deskripsi'],
-          fasilitas: List<String>.from(value['fasilitas']),
-          harga: value['harga'],
-          jumlah: value['jumlah'],
-          fotoKamar: [], // Preserve existing or empty if new
-        );
-      });
+      if (formData['kategoriKamar'] != null) {
+        (formData['kategoriKamar'] as Map<String, dynamic>).forEach((
+          key,
+          value,
+        ) {
+          // Handle fasilitas as before
+          List<String> fasilitas;
+          if (value['fasilitas'] is String) {
+            fasilitas = [value['fasilitas']];
+          } else if (value['fasilitas'] is List) {
+            fasilitas = List<String>.from(value['fasilitas']);
+          } else {
+            fasilitas = [];
+          }
 
-      // Update entity dengan data dari form
-      final updatedPenginapan = PenginapanEntity(
-        id: existingPenginapan.id,
-        namaRumah: formData['namaRumah'] ?? existingPenginapan.namaRumah,
-        alamatJalan: formData['alamatJalan'] ?? existingPenginapan.alamatJalan,
-        kecamatan: formData['kecamatan'] ?? existingPenginapan.kecamatan,
-        kelurahan: formData['kelurahan'] ?? existingPenginapan.kelurahan,
-        kodePos: formData['kodePos'] ?? existingPenginapan.kodePos,
-        linkMaps: formData['linkMaps'] ?? existingPenginapan.linkMaps,
+          kategoriKamarMap[key] = KategoriKamarEntity(
+            nama: key,
+            deskripsi: value['deskripsi'] ?? '',
+            fasilitas: fasilitas,
+            harga: value['harga'] ?? '0',
+            jumlah: value['jumlah'] ?? '0',
+            fotoKamar: [], // To be implemented later
+          );
+        });
+      }
+
+      // Create updated penginapan entity
+      final penginapan = PenginapanEntity(
+        id: id,
+        namaRumah: formData['namaRumah'],
+        alamatJalan: formData['alamatJalan'],
+        kecamatan: formData['kecamatan'],
+        kelurahan: formData['kelurahan'],
+        kodePos: formData['kodePos'],
+        linkMaps: formData['linkMaps'],
         kategoriKamar: kategoriKamarMap,
-        fotoPenginapan:
-            existingPenginapan.fotoPenginapan, // Preserve existing photos
-        userID: existingPenginapan.userID,
-        createdAt: existingPenginapan.createdAt,
+        fotoPenginapan: existingImageUrls,
+        userID: FirebaseAuth.instance.currentUser?.uid ?? '',
+        createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      // Update via use case
-      final result = await _updatePenginapanUseCase(
-        UpdatePenginapanParams(id: id, penginapan: updatedPenginapan),
+      // Use the UpdatePenginapan use case
+      await _updatePenginapanUseCase(
+        UpdatePenginapanParams(id: id, penginapan: penginapan),
       );
 
-      // Update selected penginapan if successful
-      _selectedPenginapan = result;
-
-      // Refresh lists that might contain this penginapan
-      await loadUserPenginapan(existingPenginapan.userID);
-
-      _isLoading = false;
-      notifyListeners();
-
-      return result;
+      // Reload data
+      await loadPenginapan();
+      await loadCurrentUserPenginapan();
+      _errorMessage = null;
     } catch (e) {
+      _errorMessage = e.toString();
+      print("Error updating penginapan: $_errorMessage");
+    } finally {
       _isLoading = false;
-      _errorMessage = 'Gagal memperbarui data: ${e.toString()}';
       notifyListeners();
-      return null;
     }
   }
 
   // 5. Delete penginapan
-  Future<bool> deletePenginapan(String id) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
+  Future<void> deletePenginapan(String id) async {
     try {
-      await _deletePenginapanUseCase(id);
+      _isLoading = true;
+      notifyListeners();
 
-      // Remove from lists
-      _penginapanList.removeWhere((penginapan) => penginapan.id == id);
-      _userPenginapanList.removeWhere((penginapan) => penginapan.id == id);
-
-      // Clear selected penginapan if it was deleted
-      if (_selectedPenginapan?.id == id) {
-        _selectedPenginapan = null;
+      // Ensure the ID is valid
+      if (id.isEmpty) {
+        throw Exception('Invalid penginapan ID');
       }
 
-      _isLoading = false;
-      notifyListeners();
-      return true;
+      // Use the DeletePenginapan use case
+      await _deletePenginapanUseCase(id);
+
+      // Remove from local lists
+      _userPenginapanList.removeWhere((penginapan) => penginapan.id == id);
+      _penginapanList.removeWhere((penginapan) => penginapan.id == id);
+
+      _errorMessage = null;
     } catch (e) {
+      _errorMessage = e.toString();
+      print("Error deleting penginapan: $_errorMessage");
+      throw e; // Re-throw to handle in UI
+    } finally {
       _isLoading = false;
-      _errorMessage = 'Gagal menghapus penginapan: ${e.toString()}';
       notifyListeners();
-      return false;
     }
   }
 

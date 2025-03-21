@@ -421,119 +421,111 @@ class _MystaysPageState extends State<MystaysPage> {
           ],
         ),
       ),
-      body:
-          _isLoading
-              ? Center(child: CircularProgressIndicator())
-              : _errorMessage != null
-              ? Center(
-                child: Text(
-                  _errorMessage!,
-                  style: TextStyle(color: Colors.red),
-                ),
-              )
-              : Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Reservasi Saya",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Poppins',
-                      ),
+      body: _isLoading
+    ? Center(child: CircularProgressIndicator())
+    : _errorMessage != null
+        ? Center(
+            child: Text(
+              _errorMessage!,
+              style: TextStyle(color: Colors.red),
+            ),
+          )
+        : SingleChildScrollView( // Tambahkan SingleChildScrollView di sini
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Reservasi Saya",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
                     ),
-                    SizedBox(height: 20),
-                    // Current reservations
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border:
-                            _filteredCurrentOrders.isEmpty
-                                ? Border.all(color: Colors.grey, width: 2)
-                                : null,
-                      ),
-                      height: _filteredCurrentOrders.isEmpty ? 220 : null,
-                      child:
-                          _filteredCurrentOrders.isEmpty
-                              ? Center(
-                                child: Text(
-                                  "Kamu belum memesan hotel apapun",
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 16,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                              )
-                              : ListView.builder(
-                                shrinkWrap: true,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ), // Add some horizontal padding
-                                physics: NeverScrollableScrollPhysics(),
-                                itemCount: _filteredCurrentOrders.length,
-                                itemBuilder: (context, index) {
-                                  return _buildOrderCardWithCardWidget(
-                                    _filteredCurrentOrders[index],
-                                    true,
-                                  );
-                                },
+                  ),
+                  SizedBox(height: 20),
+                  // Current reservations
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: _filteredCurrentOrders.isEmpty
+                          ? Border.all(color: Colors.grey, width: 2)
+                          : null,
+                    ),
+                    height: _filteredCurrentOrders.isEmpty ? 220 : null,
+                    child: _filteredCurrentOrders.isEmpty
+                        ? Center(
+                            child: Text(
+                              "Kamu belum memesan hotel apapun",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                                fontFamily: 'Poppins',
                               ),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: _filteredCurrentOrders.length,
+                            itemBuilder: (context, index) {
+                              return _buildOrderCardWithCardWidget(
+                                _filteredCurrentOrders[index],
+                                true,
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Riwayat pemesanan",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Poppins',
                     ),
-
-                    const SizedBox(height: 20),
-                    Text(
-                      "Riwayat pemesanan",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Poppins',
-                      ),
+                  ),
+                  const SizedBox(height: 20),
+                  // Past reservations
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: _filteredPastOrders.isEmpty
+                          ? Border.all(color: Colors.grey, width: 2)
+                          : null,
                     ),
-                    const SizedBox(height: 20),
-                    // Past reservations
-                    Expanded(
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border:
-                              _filteredPastOrders.isEmpty
-                                  ? Border.all(color: Colors.grey, width: 2)
-                                  : null,
-                        ),
-                        child:
-                            _filteredPastOrders.isEmpty
-                                ? Center(
-                                  child: Text(
-                                    "Kamu belum pernah melakukan pemesanan",
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 16,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                )
-                                : ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  itemCount: _filteredPastOrders.length,
-                                  itemBuilder: (context, index) {
-                                    return _buildOrderCardWithCardWidget(
-                                      _filteredPastOrders[index],
-                                      false,
-                                    );
-                                  },
-                                ),
-                      ),
-                    ),
-                  ],
-                ),
+                    child: _filteredPastOrders.isEmpty
+                        ? Center(
+                            child: Text(
+                              "Kamu belum pernah melakukan pemesanan",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                                fontFamily: 'Poppins',
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemCount: _filteredPastOrders.length,
+                            itemBuilder: (context, index) {
+                              return _buildOrderCardWithCardWidget(
+                                _filteredPastOrders[index],
+                                false,
+                              );
+                            },
+                          ),
+                  ),
+                ],
               ),
+            ),
+          ),
       floatingActionButton: FloatingActionButton(
         onPressed: _loadOrderData,
         child: Icon(Icons.refresh),

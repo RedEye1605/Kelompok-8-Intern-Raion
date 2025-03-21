@@ -140,7 +140,6 @@ class _OrderPageState extends State<OrderPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
               "Detail Menginap",
               style: TextStyle(
@@ -172,7 +171,11 @@ class _OrderPageState extends State<OrderPage> {
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child: TextField(
+                    readOnly: true,
+                    controller: TextEditingController(
+                      text: _selectedKategoriKamar,
+                    ),
                     decoration: InputDecoration(
                       labelText: "Tipe Kamar",
                       labelStyle: const TextStyle(
@@ -188,17 +191,9 @@ class _OrderPageState extends State<OrderPage> {
                         ),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: Colors.grey[100],
+                      suffixIcon: Icon(Icons.lock_outline, color: Colors.grey),
                     ),
-                    value: _selectedKategoriKamar,
-                    items:
-                        _kategoriKamar.keys.map((String key) {
-                          return DropdownMenuItem<String>(
-                            value: key,
-                            child: Text(key),
-                          );
-                        }).toList(),
-                    onChanged: _kategoriKamarChanged,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -475,5 +470,5 @@ class _OrderPageState extends State<OrderPage> {
     _checkInController.dispose();
     _checkOutController.dispose();
     super.dispose();
-  }  
+  }
 }

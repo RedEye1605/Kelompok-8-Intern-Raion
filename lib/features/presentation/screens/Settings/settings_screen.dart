@@ -185,180 +185,279 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showDeleteConfirmation() async {
+  Future<void> _showDeleteConfirmation() async {
     final passwordController = TextEditingController();
+    BuildContext? dialogContext;
 
     try {
       final user = _auth.currentUser;
       if (user == null) return;
 
-      // Store BuildContext for later use
+      // Get stable references to avoid context issues
       final navigator = Navigator.of(context);
       final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-      await showDialog(
+      // STEP 1: Password confirmation
+      final bool? passwordConfirmed = await showDialog<bool>(
         context: context,
-        builder:
-            (BuildContext dialogContext) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          dialogContext = context;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            title: const Text('Konfirmasi Kata Sandi'),
+            content: TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Kata Sandi',
+                border: OutlineInputBorder(),
               ),
-              title: const Text('Konfirmasi Kata Sandi'),
-              content: TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Kata Sandi',
-                  border: OutlineInputBorder(),
-                ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext!).pop(false),
+                child: const Text('Batal'),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Batal'),
+              ElevatedButton(
+                onPressed: () async {
+                  if (passwordController.text.isEmpty) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text('Masukkan kata sandi')),
+                    );
+                    return;
+                  }
+
+                  try {
+                    final credential = firebase_auth
+                        .EmailAuthProvider.credential(
+                      email: user.email!,
+                      password: passwordController.text,
+                    );
+                    await user.reauthenticateWithCredential(credential);
+                    Navigator.of(dialogContext!).pop(true);
+                  } catch (e) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Kata sandi salah'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Konfirmasi'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (passwordConfirmed != true) return;
+
+      // STEP 2: Final confirmation
+      final bool? shouldDelete = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          dialogContext = context;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text(
+              'Apakah Anda yakin ingin menghapus akun?',
+              textAlign: TextAlign.center,
+            ),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Tindakan ini tidak dapat dibatalkan.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (passwordController.text.isEmpty) {
-                      scaffoldMessenger.showSnackBar(
-                        const SnackBar(content: Text('Masukkan kata sandi')),
-                      );
-                      return;
-                    }
-
-                    try {
-                      final credential = firebase_auth
-                          .EmailAuthProvider.credential(
-                        email: user.email!,
-                        password: passwordController.text,
-                      );
-                      await user.reauthenticateWithCredential(credential);
-                      Navigator.of(dialogContext).pop();
-
-                      // Show final confirmation dialog
-                      showDeleteAccountDialog(context, () async {
-                        try {
-                          // Show loading dialog
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder:
-                                (loadingContext) => const AlertDialog(
-                                  content: Row(
-                                    children: [
-                                      CircularProgressIndicator(),
-                                      SizedBox(width: 16),
-                                      Text("Menghapus akun..."),
-                                    ],
-                                  ),
-                                ),
-                          );
-
-                          // Delete all user data in order
-                          await Future.wait([
-                            // 1. Delete warlok data
-                            _firestore
-                                .collection('warlok')
-                                .doc(user.uid)
-                                .delete(),
-
-                            // 2. Delete ratings
-                            _firestore
-                                .collection('ratings')
-                                .where('userId', isEqualTo: user.uid)
-                                .get()
-                                .then((snapshot) {
-                                  for (var doc in snapshot.docs) {
-                                    doc.reference.delete();
-                                  }
-                                }),
-
-                            // 3. Delete properties
-                            _firestore
-                                .collection('properties')
-                                .where('userId', isEqualTo: user.uid)
-                                .get()
-                                .then((snapshot) {
-                                  for (var doc in snapshot.docs) {
-                                    doc.reference.delete();
-                                  }
-                                }),
-
-                            // 4. Delete bookings
-                            _firestore
-                                .collection('bookings')
-                                .where('userId', isEqualTo: user.uid)
-                                .get()
-                                .then((snapshot) {
-                                  for (var doc in snapshot.docs) {
-                                    doc.reference.delete();
-                                  }
-                                }),
-                          ]);
-
-                          // 5. Get and delete username
-                          final userData =
-                              await _firestore
-                                  .collection('users')
-                                  .doc(user.uid)
-                                  .get();
-                          final username =
-                              userData
-                                  .data()?['username']
-                                  ?.toString()
-                                  .toLowerCase();
-                          if (username != null) {
-                            await _firestore
-                                .collection('usernames')
-                                .doc(username)
-                                .delete();
-                          }
-
-                          // 6. Delete user document
-                          await _firestore
-                              .collection('users')
-                              .doc(user.uid)
-                              .delete();
-
-                          // 7. Delete auth account
-                          await user.delete();
-
-                          // Navigate and show success message
-                          navigator.pushNamedAndRemoveUntil(
-                            '/login',
-                            (route) => false,
-                          );
-                          scaffoldMessenger.showSnackBar(
-                            const SnackBar(
-                              content: Text('Akun berhasil dihapus'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        } catch (e) {
-                          Navigator.of(context).pop(); // Close loading dialog
-                          scaffoldMessenger.showSnackBar(
-                            SnackBar(
-                              content: Text('Error: ${e.toString()}'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      });
-                    } catch (e) {
-                      scaffoldMessenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Kata sandi salah'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('Konfirmasi'),
+                SizedBox(height: 8),
+                Text(
+                  'Semua data Anda akan dihapus secara permanen:',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text('• Profil pengguna', style: TextStyle(color: Colors.grey)),
+                Text('• Rating & ulasan', style: TextStyle(color: Colors.grey)),
+                Text(
+                  '• Properti & penginapan',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                Text(
+                  '• Pemesanan & riwayat',
+                  style: TextStyle(color: Colors.grey),
+                ),
+                Text(
+                  '• Status jalan & postingan',
+                  style: TextStyle(color: Colors.grey),
                 ),
               ],
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext!).pop(false),
+                child: const Text('Batal'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                onPressed: () => Navigator.of(dialogContext!).pop(true),
+                child: const Text(
+                  'Hapus Akun',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          );
+        },
       );
+
+      if (shouldDelete != true) return;
+
+      // STEP 3: Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          dialogContext = context;
+          return WillPopScope(
+            onWillPop:
+                () async => false, // Prevent back button from closing dialog
+            child: AlertDialog(
+              content: Row(
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Text("Menghapus akun dan data Anda..."),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+
+      // STEP 4: Delete all user data
+      try {
+        // 1. First get all the user data we need before deleting
+        final userData =
+            await _firestore.collection('users').doc(user.uid).get();
+        final username = userData.data()?['username']?.toString().toLowerCase();
+
+        // 2. Check for and delete road status posts
+        await _firestore
+            .collection('road_status')
+            .where('userId', isEqualTo: user.uid)
+            .get()
+            .then((snapshot) {
+              for (var doc in snapshot.docs) {
+                doc.reference.delete();
+              }
+            })
+            .catchError((e) => debugPrint('Error deleting road_status: $e'));
+
+        // 3. Delete warlok data if exists
+        await _firestore
+            .collection('warlok')
+            .doc(user.uid)
+            .delete()
+            .catchError((e) => debugPrint('Error deleting warlok: $e'));
+
+        // 4. Delete all user ratings
+        await _firestore
+            .collection('ratings')
+            .where('userId', isEqualTo: user.uid)
+            .get()
+            .then((snapshot) {
+              for (var doc in snapshot.docs) {
+                doc.reference.delete();
+              }
+            })
+            .catchError((e) => debugPrint('Error deleting ratings: $e'));
+
+        // 5. Delete all user properties
+        await _firestore
+            .collection('properties')
+            .where('userId', isEqualTo: user.uid)
+            .get()
+            .then((snapshot) {
+              for (var doc in snapshot.docs) {
+                doc.reference.delete();
+              }
+            })
+            .catchError((e) => debugPrint('Error deleting properties: $e'));
+
+        // 6. Delete all user bookings
+        await _firestore
+            .collection('bookings')
+            .where('userId', isEqualTo: user.uid)
+            .get()
+            .then((snapshot) {
+              for (var doc in snapshot.docs) {
+                doc.reference.delete();
+              }
+            })
+            .catchError((e) => debugPrint('Error deleting bookings: $e'));
+
+        // 7. Delete username reference if it exists
+        if (username != null) {
+          await _firestore
+              .collection('usernames')
+              .doc(username)
+              .delete()
+              .catchError((e) => debugPrint('Error deleting username: $e'));
+        }
+
+        // 8. Delete user document
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .delete()
+            .catchError((e) => debugPrint('Error deleting user document: $e'));
+
+        // 9. Finally delete the Firebase Auth account
+        await user.delete();
+
+        // Close the loading dialog if still showing
+        if (dialogContext != null && navigator.canPop()) {
+          Navigator.of(dialogContext!).pop();
+        }
+
+        // Navigate to login screen
+        navigator.pushNamedAndRemoveUntil('/login', (route) => false);
+
+        // Show success message
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(
+            content: Text('Akun berhasil dihapus'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        // Close loading dialog if showing
+        if (dialogContext != null && navigator.canPop()) {
+          Navigator.of(dialogContext!).pop();
+        }
+
+        // Show detailed error
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text('Gagal menghapus akun: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
     } finally {
+      // Always clean up resources
       passwordController.dispose();
     }
   }

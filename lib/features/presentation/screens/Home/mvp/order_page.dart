@@ -374,6 +374,7 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   Future<void> _editHandle() async {
+    
     final User? user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(
@@ -389,7 +390,7 @@ class _OrderPageState extends State<OrderPage> {
     // Fix: If penginapanId is null or empty, fetch it properly
     String penginapanId = widget.penginapan.id ?? '';
     String ownerId = widget.penginapan.userID;
-
+   
     // If we don't have valid IDs, try to look up the actual accommodation
     if (penginapanId.isEmpty || ownerId.isEmpty) {
       try {
@@ -411,9 +412,9 @@ class _OrderPageState extends State<OrderPage> {
         print("Error looking up penginapan: $e");
       }
     }
-
-    try {
-      await FirebaseFirestore.instance.collection('orders').add({
+    
+     try {
+      final docRef = await FirebaseFirestore.instance.collection('orders').add({
         'userId': user.uid,
         'nama': _namaController.text,
         'email': _emailController.text,
@@ -425,10 +426,11 @@ class _OrderPageState extends State<OrderPage> {
         'jumlahKamar': int.tryParse(_jumlahKamarController.text) ?? 1,
         'hotelName': widget.penginapan.namaRumah,
         'price': _currentPrice,
-        'createdAt': FieldValue.serverTimestamp(),
         'penginapanId': penginapanId, // Use our fixed value
         'ownerId': ownerId, // Use our fixed value
-        'status': 'pending',
+        'status': false,
+        'createdAt': FieldValue.serverTimestamp(),
+        'expiredAt': DateTime.now().add(Duration(minutes: 30)),
       });
 
       ScaffoldMessenger.of(
@@ -439,6 +441,7 @@ class _OrderPageState extends State<OrderPage> {
         context,
       ).showSnackBar(SnackBar(content: Text("Gagal menyimpan data: $e")));
     }
+
 
     // Rest of your code...
     final DateTime checkInDate = DateFormat(
@@ -451,20 +454,26 @@ class _OrderPageState extends State<OrderPage> {
     // Hitung jumlah hari
     final int jumlahHari = checkOutDate.difference(checkInDate).inDays;
 
+    // Navigasi ke PaymentPage dengan order ID
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => PaymentPage(
-              hotelName: widget.penginapan.namaRumah,
-              jumlahHari: jumlahHari,
-              tipeKamar: _selectedKategoriKamar!,
-              pemesan: _namaController.text,
-              price: _currentPrice,
-            ),
+        builder: (context) => PaymentPage(
+          orderID: docRef.id.toString(),
+          hotelName: widget.penginapan.namaRumah,
+          jumlahHari: jumlahHari,
+          tipeKamar: _selectedKategoriKamar!,
+          pemesan: _namaController.text,
+          price: _currentPrice,
+        ),
       ),
     );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gagal menyimpan data: $e")));
   }
+}
+
 
   String _getNomorNegara(String? negara) {
     if (negara == "Indonesia") {

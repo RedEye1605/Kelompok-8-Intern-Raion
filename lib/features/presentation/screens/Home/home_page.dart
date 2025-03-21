@@ -1,6 +1,6 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/features/presentation/screens/Home/hotel_page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mystays_page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/home.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/profile_page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/bookmark_page.dart';
@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
   final screens = [
     const Home(),
     BookmarkPage(),
-    const HotelPage(),
+    const MystaysPage(),
     ProfilePage(),
   ];
 

@@ -176,10 +176,12 @@ class _DetailPageState extends State<DetailPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Carousel image slider
+          // Carousel image slider - ukuran diperbesar menjadi 80% layar
           CarouselSlider(
             options: CarouselOptions(
-              height: MediaQuery.of(context).size.height * 0.4,
+              height:
+                  MediaQuery.of(context).size.height *
+                  0.8, // Diperbesar dari 0.4 menjadi 0.8
               viewportFraction: 1.0,
               enlargeCenterPage: false,
               onPageChanged: (index, reason) {
@@ -192,6 +194,7 @@ class _DetailPageState extends State<DetailPage> {
             ),
             items:
                 allImages.map((imageUrl) {
+                  // Kode image carousel tetap sama
                   return Builder(
                     builder: (BuildContext context) {
                       return Container(
@@ -212,7 +215,9 @@ class _DetailPageState extends State<DetailPage> {
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.black.withOpacity(0.1),
-                                Colors.black.withOpacity(0.5),
+                                Colors.black.withOpacity(
+                                  0.6,
+                                ), // Ditingkatkan opacity agar teks lebih terlihat
                               ],
                             ),
                           ),
@@ -223,10 +228,12 @@ class _DetailPageState extends State<DetailPage> {
                 }).toList(),
           ),
 
-          // Image indicator dots
+          // Image indicator dots - posisi disesuaikan
           if (allImages.length > 1)
             Positioned(
-              bottom: MediaQuery.of(context).size.height * 0.62,
+              bottom:
+                  MediaQuery.of(context).size.height *
+                  0.22, // Disesuaikan dengan perubahan ukuran gambar
               left: 0,
               right: 0,
               child: Row(
@@ -271,11 +278,11 @@ class _DetailPageState extends State<DetailPage> {
             ),
           ),
 
-          // Draggable Sheet for Details
+          // Draggable Sheet for Details - ukuran dikurangi menjadi 1/4 layar
           DraggableScrollableSheet(
-            initialChildSize: 0.6,
-            minChildSize: 0.6,
-            maxChildSize: 0.9,
+            initialChildSize: 0.37, // Dikurangi dari 0.6 menjadi 0.25
+            minChildSize: 0.3, // Dikurangi dari 0.6 menjadi 0.2
+            maxChildSize: 0.9, // Tetap 0.9 agar dapat melihat detail
             builder: (context, scrollController) {
               return Container(
                 decoration: const BoxDecoration(
@@ -289,6 +296,7 @@ class _DetailPageState extends State<DetailPage> {
                     ),
                   ],
                 ),
+                // Content draggable sheet tetap sama
                 child: ListView(
                   controller: scrollController,
                   padding: const EdgeInsets.all(20),
@@ -306,6 +314,7 @@ class _DetailPageState extends State<DetailPage> {
                       ),
                     ),
 
+                    // Konten lainnya tetap sama
                     // Title and Rating
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

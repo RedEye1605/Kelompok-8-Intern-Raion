@@ -391,7 +391,7 @@ class _MystaysPageState extends State<MystaysPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Tutup'),
+                child: const Text('Tutup'),
               ),
             ],
           ),
@@ -478,51 +478,6 @@ class _MystaysPageState extends State<MystaysPage> {
           ],
         ),
       ),
-<<<<<<< HEAD
-      body: _isLoading
-    ? Center(child: CircularProgressIndicator())
-    : _errorMessage != null
-        ? Center(
-            child: Text(
-              _errorMessage!,
-              style: TextStyle(color: Colors.red),
-            ),
-          )
-        : SingleChildScrollView( // Tambahkan SingleChildScrollView di sini
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Reservasi Saya",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  // Current reservations
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: _filteredCurrentOrders.isEmpty
-                          ? Border.all(color: Colors.grey, width: 2)
-                          : null,
-                    ),
-                    height: _filteredCurrentOrders.isEmpty ? 220 : null,
-                    child: _filteredCurrentOrders.isEmpty
-                        ? Center(
-                            child: Text(
-                              "Kamu belum memesan hotel apapun",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                                fontFamily: 'Poppins',
-=======
       body:
           _isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -589,76 +544,8 @@ class _MystaysPageState extends State<MystaysPage> {
                                     true,
                                   );
                                 },
->>>>>>> 83694c940533fc03d605946cef6632b9b46b00d4
                               ),
-                            ),
-                          )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: _filteredCurrentOrders.length,
-                            itemBuilder: (context, index) {
-                              return _buildOrderCardWithCardWidget(
-                                _filteredCurrentOrders[index],
-                                true,
-                              );
-                            },
-                          ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    "Riwayat pemesanan",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Poppins',
                     ),
-<<<<<<< HEAD
-                  ),
-                  const SizedBox(height: 20),
-                  // Past reservations
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: _filteredPastOrders.isEmpty
-                          ? Border.all(color: Colors.grey, width: 2)
-                          : null,
-                    ),
-                    child: _filteredPastOrders.isEmpty
-                        ? Center(
-                            child: Text(
-                              "Kamu belum pernah melakukan pemesanan",
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
-                                fontFamily: 'Poppins',
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
-                            itemCount: _filteredPastOrders.length,
-                            itemBuilder: (context, index) {
-                              return _buildOrderCardWithCardWidget(
-                                _filteredPastOrders[index],
-                                false,
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _loadOrderData,
-        child: Icon(Icons.refresh),
-        tooltip: 'Refresh Orders',
-      ),
-
 
                     // SECTION 2: PENDING PAYMENT RESERVATIONS - Add padding here
                     Padding(
@@ -717,7 +604,6 @@ class _MystaysPageState extends State<MystaysPage> {
                   ],
                 ),
               ),
->>>>>>> 83694c940533fc03d605946cef6632b9b46b00d4
     );
   }
 
@@ -856,14 +742,14 @@ class _MystaysPageState extends State<MystaysPage> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Tutup'),
               ),
-              if (!order['status'])
+              if (!order['isPaid'])
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
                     // Add navigation to payment page here
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  child: Text('Bayar Sekarang'),
+                  child: const Text('Bayar Sekarang'),
                 ),
             ],
           ),
@@ -872,23 +758,20 @@ class _MystaysPageState extends State<MystaysPage> {
 
   // Helper method for building detail rows
   Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: Colors.grey),
-          SizedBox(width: 8),
-          Text(label, style: TextStyle(fontWeight: FontWeight.w500)),
-          SizedBox(width: 4),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.black87),
-              textAlign: TextAlign.right,
-            ),
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: Colors.grey),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(width: 4),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(color: Colors.black87),
+            textAlign: TextAlign.right,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

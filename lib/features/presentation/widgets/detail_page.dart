@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/order_page.dart';
 
 class DetailPage extends StatefulWidget {
   final String imageUrl;
@@ -243,181 +243,58 @@ class _DetailPageState extends State<DetailPage> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
 
-                    const SizedBox(height: 20),
-                    const Divider(),
-
-                    // Price section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            "Harga per malam",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Rp${widget.price}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const Divider(),
-
-                    // Description
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Deskripsi",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      widget.deskripsi ??
-                          "Penginapan nyaman dengan lokasi strategis di Malang.",
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                        height: 1.5,
-                      ),
-                    ),
-
-                    // Facilities
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Fasilitas",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children:
-                          (widget.fasilitas ?? ['WiFi', 'AC', 'TV']).map((
-                            facility,
-                          ) {
-                            return Chip(
-                              label: Text(facility),
-                              backgroundColor: Colors.blue.withOpacity(0.1),
-                              labelStyle: const TextStyle(color: Colors.blue),
-                            );
-                          }).toList(),
-                    ),
-
-                    // Room details if available
-                    if (widget.kategoriKamar != null &&
-                        widget.kategoriKamar!.isNotEmpty)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 20),
-                          const Text(
-                            "Detail Kamar",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          ...widget.kategoriKamar!.entries.map((entry) {
-                            final kategori = entry.key;
-                            // Cast entry.value to expected model type
-                            final detail =
-                                entry
-                                    .value; // assuming it's a KategoriKamarModel
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      kategori,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _price(widget.price),
+                        ElevatedButton(
+                          onPressed:
+                              () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => OrderPage(
+                                        hotelName: widget.title,
+                                        price: widget.price,
                                       ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text("Jumlah: ${detail.jumlah} kamar"),
-                                    const SizedBox(height: 4),
-                                    Text("Harga: Rp${detail.harga} / malam"),
-                                  ],
                                 ),
                               ),
-                            );
-                          }).toList(),
-                        ],
-                      ),
-
-                    const SizedBox(
-                      height: 80,
-                    ), // Space for the bottom booking button
+                          child: const Text(
+                            "Pesan",
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.normal,
+                              fontFamily: 'Poppins',
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            minimumSize: const Size(200, 50),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               );
             },
           ),
-
-          // Fixed booking button at the bottom
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Fitur pemesanan segera hadir!'),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  "Pesan Sekarang",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ),
         ],
+      ),
+    );
+  }
+
+  Widget _price(String price) {
+    return Text(
+      price,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.black,
       ),
     );
   }

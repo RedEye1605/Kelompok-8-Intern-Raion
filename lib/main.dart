@@ -6,6 +6,8 @@ import 'package:my_flutter_app/features/presentation/providers/penginapan_form_p
 import 'package:my_flutter_app/features/presentation/providers/penginapan_provider.dart';
 import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/hotel-page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/order_page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/payment_page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/search_hotel.dart';
 import 'package:my_flutter_app/features/presentation/screens/Settings/help_report_screen.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/edit_profile.dart';

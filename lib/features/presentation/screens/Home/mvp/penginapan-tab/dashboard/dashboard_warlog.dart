@@ -9,6 +9,7 @@ import 'package:my_flutter_app/features/presentation/widgets/card_widget.dart'; 
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Add this
 import 'package:cloud_firestore/cloud_firestore.dart'; // Add this
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/dashboard/detail_pemesanan.dart';
 
 class DashboardWarlog extends StatefulWidget {
   const DashboardWarlog({Key? key}) : super(key: key);
@@ -1163,7 +1164,15 @@ class _DashboardWarlogState extends State<DashboardWarlog>
                             ),
                             // Detail link
                             InkWell(
-                              onTap: () {}, // Navigate to booking detail page
+                              onTap: () {
+                                // Add navigation to DetailPemesananPage
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DetailPemesananPage(),
+                                  ),
+                                );
+                              }, // Navigate to booking detail page
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [

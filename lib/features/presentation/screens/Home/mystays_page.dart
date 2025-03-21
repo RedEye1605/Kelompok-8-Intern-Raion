@@ -16,12 +16,14 @@ class _MystaysPageState extends State<MystaysPage> {
   bool _isLoading = true;
   String? _errorMessage;
 
-  // Store orders data
-  List<Map<String, dynamic>> _currentOrders = [];
-  List<Map<String, dynamic>> _pastOrders = [];
+  // Updated to store orders by payment status
+  List<Map<String, dynamic>> _paidOrders = []; // Orders that have been paid
+  List<Map<String, dynamic>> _pendingOrders = []; // Orders awaiting payment
+  List<Map<String, dynamic>> _pastOrders = []; // Past orders (completed stays)
 
   // For filtering
-  List<Map<String, dynamic>> _filteredCurrentOrders = [];
+  List<Map<String, dynamic>> _filteredPaidOrders = [];
+  List<Map<String, dynamic>> _filteredPendingOrders = [];
   List<Map<String, dynamic>> _filteredPastOrders = [];
 
   @override
@@ -36,7 +38,7 @@ class _MystaysPageState extends State<MystaysPage> {
     super.dispose();
   }
 
-  // Improved method for loading order data with proper relationships
+  // Improved method for loading order data with proper payment status separation
   Future<void> _loadOrderData() async {
     setState(() {
       _isLoading = true;
@@ -53,20 +55,82 @@ class _MystaysPageState extends State<MystaysPage> {
         return;
       }
 
-      // Query without orderBy to avoid index requirements
-      final QuerySnapshot orderSnapshot =
+      // Get user's orders - try both field names used in your app
+      QuerySnapshot? orderSnapshot;
+      try {
+        orderSnapshot =
           await FirebaseFirestore.instance
               .collection('orders')
               .where('userId', isEqualTo: user.uid)
               .get();
 
-      final List<Map<String, dynamic>> currentOrders = [];
+        // If no results, try the other field name
+        if (orderSnapshot.docs.isEmpty) {
+          orderSnapshot =
+              await FirebaseFirestore.instance
+                  .collection('orders')
+                  .where('ownerId', isEqualTo: user.uid)
+                  .get();
+        }
+      } catch (e) {
+        print('Error querying orders: $e');
+        // Fallback to get all orders and filter manually
+        orderSnapshot =
+            await FirebaseFirestore.instance.collection('orders').get();
+      }
+
+      // Get payment records to check which orders are paid
+      final QuerySnapshot paymentsSnapshot =
+          await FirebaseFirestore.instance.collection('payments').get();
+
+
+      // Create a set of paid order IDs for quick lookup
+      final Set<String> paidOrderIds = {};
+      for (var doc in paymentsSnapshot.docs) {
+        try {
+          final data = doc.data() as Map<String, dynamic>;
+          // Try different field names that might be used
+          String? orderId;
+          if (data.containsKey('orderID')) {
+            orderId = data['orderID'] as String?;
+          } else if (data.containsKey('orderId')) {
+            orderId = data['orderId'] as String?;
+          } else if (data.containsKey('order_id')) {
+            orderId = data['order_id'] as String?;
+          }
+
+          // Sometimes the document ID itself is the order ID
+          if (orderId == null) {
+            // Check if this document ID matches any order IDs
+            if (orderSnapshot.docs.any((orderDoc) => orderDoc.id == doc.id)) {
+              orderId = doc.id;
+            }
+          }
+
+          if (orderId != null) {
+            paidOrderIds.add(orderId);
+          }
+        } catch (e) {
+          print('Error processing payment document: $e');
+        }
+      }
+
+      // Create separate lists for each order category
+      final List<Map<String, dynamic>> paidOrders = [];
+      final List<Map<String, dynamic>> pendingOrders = [];
       final List<Map<String, dynamic>> pastOrders = [];
       final DateTime now = DateTime.now();
 
       // Process each order
       for (var doc in orderSnapshot.docs) {
         final data = doc.data() as Map<String, dynamic>;
+
+        // Skip orders that don't belong to this user (if we fetched all)
+        final String? userId =
+            data['userId'] as String? ?? data['ownerId'] as String?;
+        if (userId != user.uid) {
+          continue;
+        }
 
         try {
           // Parse checkout date to determine if it's current or past
@@ -76,7 +140,8 @@ class _MystaysPageState extends State<MystaysPage> {
           try {
             checkOut = DateFormat('yyyy-MM-dd').parse(checkOutStr);
           } catch (e) {
-            checkOut = now.subtract(Duration(days: 1));
+            // Default to future date to prevent wrong categorization
+            checkOut = now.add(const Duration(days: 1));
           }
 
           // Create base order object
@@ -87,7 +152,11 @@ class _MystaysPageState extends State<MystaysPage> {
             'checkIn': data['checkIn'] ?? '',
             'checkOut': checkOutStr,
             'price': data['price'] ?? '0',
-            'status': data['status'] ?? false,
+            'status':
+                data['status'] ?? false, // Keep this for backward compatibility
+            'isPaid': paidOrderIds.contains(
+              doc.id,
+            ), // New field to track payment
             'jumlahKamar': data['jumlahKamar'] ?? 1,
             'dateRange': "${data['checkIn']} - ${data['checkOut']}",
             'createdAt': data['createdAt'],
@@ -96,7 +165,7 @@ class _MystaysPageState extends State<MystaysPage> {
             'kecamatan': 'Malang', // Default location
           };
 
-          // Enhanced: Try to fetch penginapan data (image, location)
+          // Try to fetch penginapan data (image, location)
           if (order['penginapanId'].toString().isNotEmpty) {
             try {
               final penginapanDoc =
@@ -129,19 +198,22 @@ class _MystaysPageState extends State<MystaysPage> {
             }
           }
 
-          // Sort into current or past based on checkout date
-          if (checkOut.isAfter(now)) {
-            currentOrders.add(order);
+          // Categorize order based on payment status
+          if (order['isPaid']) {
+            // All paid reservations go to "Reservasi Saya"
+            paidOrders.add(order);
           } else {
-            pastOrders.add(order);
+            // All unpaid reservations go to "Menunggu Pembayaran"
+            pendingOrders.add(order);
           }
         } catch (e) {
           print("Error processing order document: $e");
         }
       }
 
-      // Manual sorting by createdAt (newest first)
-      currentOrders.sort((a, b) {
+      // Sort by createdAt (newest first)
+      final sortByTimestamp = (List<Map<String, dynamic>> list) {
+        list.sort((a, b) {
         final aTimestamp = a['createdAt'] as Timestamp?;
         final bTimestamp = b['createdAt'] as Timestamp?;
 
@@ -151,22 +223,18 @@ class _MystaysPageState extends State<MystaysPage> {
 
         return bTimestamp.compareTo(aTimestamp);
       });
+      };
 
-      pastOrders.sort((a, b) {
-        final aTimestamp = a['createdAt'] as Timestamp?;
-        final bTimestamp = b['createdAt'] as Timestamp?;
-
-        if (aTimestamp == null && bTimestamp == null) return 0;
-        if (aTimestamp == null) return 1;
-        if (bTimestamp == null) return -1;
-
-        return bTimestamp.compareTo(aTimestamp);
-      });
+      sortByTimestamp(paidOrders);
+      sortByTimestamp(pendingOrders);
+      sortByTimestamp(pastOrders);
 
       setState(() {
-        _currentOrders = currentOrders;
+        _paidOrders = paidOrders;
+        _pendingOrders = pendingOrders;
         _pastOrders = pastOrders;
-        _filteredCurrentOrders = List.from(currentOrders);
+        _filteredPaidOrders = List.from(paidOrders);
+        _filteredPendingOrders = List.from(pendingOrders);
         _filteredPastOrders = List.from(pastOrders);
         _isLoading = false;
       });
@@ -267,7 +335,8 @@ class _MystaysPageState extends State<MystaysPage> {
         }
       }
 
-      sortList(_filteredCurrentOrders);
+      sortList(_filteredPaidOrders);
+      sortList(_filteredPendingOrders);
       sortList(_filteredPastOrders);
     });
   }
@@ -277,16 +346,17 @@ class _MystaysPageState extends State<MystaysPage> {
       context: context,
       builder:
           (context) => AlertDialog(
-            title: Text('Cari Reservasi'),
+            title: const Text('Cari Reservasi'),
             content: TextField(
               controller: searchController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Masukkan nama penginapan...',
               ),
               onChanged: (searchText) {
                 if (searchText.isEmpty) {
                   setState(() {
-                    _filteredCurrentOrders = List.from(_currentOrders);
+                    _filteredPaidOrders = List.from(_paidOrders);
+                    _filteredPendingOrders = List.from(_pendingOrders);
                     _filteredPastOrders = List.from(_pastOrders);
                   });
                   return;
@@ -294,9 +364,10 @@ class _MystaysPageState extends State<MystaysPage> {
 
                 final searchLower = searchText.toLowerCase();
 
-                setState(() {
-                  _filteredCurrentOrders =
-                      _currentOrders
+                // Helper function to filter orders
+                final filterBySearch =
+                    (List<Map<String, dynamic>> list) =>
+                        list
                           .where(
                             (order) =>
                                 order['hotelName']
@@ -310,34 +381,24 @@ class _MystaysPageState extends State<MystaysPage> {
                           )
                           .toList();
 
-                  _filteredPastOrders =
-                      _pastOrders
-                          .where(
-                            (order) =>
-                                order['hotelName']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(searchLower) ||
-                                order['tipeKamar']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(searchLower),
-                          )
-                          .toList();
+                setState(() {
+                  _filteredPaidOrders = filterBySearch(_paidOrders);
+                  _filteredPendingOrders = filterBySearch(_pendingOrders);
+                  _filteredPastOrders = filterBySearch(_pastOrders);
                 });
               },
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Tutup'),
+                child: const Text('Tutup'),
               ),
             ],
           ),
     );
   }
 
-  // Improved card widget builder with proper layout and data
+  // Card widget builder for orders
   Widget _buildOrderCardWithCardWidget(
     Map<String, dynamic> order,
     bool isActive,
@@ -347,29 +408,22 @@ class _MystaysPageState extends State<MystaysPage> {
     final String formattedPrice = rawPrice.toInt().toString();
 
     // Use the properly fetched location from penginapan
-    // This should be displaying the kecamatan, not the room type
     final String location = order['kecamatan'] ?? "Malang";
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16.0),
-        child: SizedBox(
+    return SizedBox(
           // Updated size to match the requested dimensions
-          width: 390,
+      width: double.infinity,
           height: 269,
           child: CardWidget(
             imageUrl: order['imageUrl'],
             title: order['hotelName'],
-            alamat: location, // Use only location data, not room info
+        alamat: location,
             price: formattedPrice,
             rating: 4, // Hide rating
             ulasan: 200, // Hide reviews
             onCustomTap: () => _viewOrderDetail(order),
             isInDashboardWarlok: true,
           ),
-        ),
-      ),
     );
   }
 
@@ -388,19 +442,22 @@ class _MystaysPageState extends State<MystaysPage> {
             Expanded(
               child: OutlinedButton(
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: Colors.black54),
+                  side: const BorderSide(color: Colors.black54),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
                   backgroundColor: Colors.white,
                 ),
                 onPressed: _showSearchDialog,
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: Colors.grey, size: 25),
-                    SizedBox(width: 10),
-                    Text(
+                    const Icon(Icons.search, color: Colors.grey, size: 25),
+                    const SizedBox(width: 10),
+                    const Text(
                       'Cari riwayat',
                       style: TextStyle(color: Colors.black54),
                     ),
@@ -421,6 +478,7 @@ class _MystaysPageState extends State<MystaysPage> {
           ],
         ),
       ),
+<<<<<<< HEAD
       body: _isLoading
     ? Center(child: CircularProgressIndicator())
     : _errorMessage != null
@@ -464,6 +522,74 @@ class _MystaysPageState extends State<MystaysPage> {
                                 color: Colors.grey,
                                 fontSize: 16,
                                 fontFamily: 'Poppins',
+=======
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
+              ? Center(
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              )
+              : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // SECTION 1: PAID RESERVATIONS - Add padding here
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16.0,
+                        top: 16.0,
+                        right: 16.0,
+                        bottom: 8.0,
+                      ),
+                      child: const Text(
+                        "Reservasi Saya",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
+
+                    // Paid reservations container
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border:
+                            _filteredPaidOrders.isEmpty
+                                ? Border.all(color: Colors.grey, width: 2)
+                                : null,
+                      ),
+                      constraints: const BoxConstraints(minHeight: 220),
+                      child:
+                          _filteredPaidOrders.isEmpty
+                              ? const Center(
+                                child: Text(
+                                  "Kamu belum memesan hotel apapun",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                              )
+                              : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _filteredPaidOrders.length,
+                                itemBuilder: (context, index) {
+                                  return _buildOrderCardWithCardWidget(
+                                    _filteredPaidOrders[index],
+                                    true,
+                                  );
+                                },
+>>>>>>> 83694c940533fc03d605946cef6632b9b46b00d4
                               ),
                             ),
                           )
@@ -487,6 +613,7 @@ class _MystaysPageState extends State<MystaysPage> {
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Poppins',
                     ),
+<<<<<<< HEAD
                   ),
                   const SizedBox(height: 20),
                   // Past reservations
@@ -531,6 +658,66 @@ class _MystaysPageState extends State<MystaysPage> {
         child: Icon(Icons.refresh),
         tooltip: 'Refresh Orders',
       ),
+=======
+
+                    // SECTION 2: PENDING PAYMENT RESERVATIONS - Add padding here
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 16.0,
+                        top: 16.0,
+                        right: 16.0,
+                        bottom: 8.0,
+                      ),
+                      child: const Text(
+                        "Menunggu Pembayaran",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins',
+                        ),
+                      ),
+                    ),
+
+                    // Pending payment container
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border:
+                            _filteredPendingOrders.isEmpty
+                                ? Border.all(color: Colors.grey, width: 2)
+                                : null,
+                      ),
+                      constraints: const BoxConstraints(minHeight: 220),
+                      child:
+                          _filteredPendingOrders.isEmpty
+                              ? const Center(
+                                child: Text(
+                                  "Tidak ada pemesanan yang menunggu pembayaran",
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 16,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                              )
+                              : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: _filteredPendingOrders.length,
+                                itemBuilder: (context, index) {
+                                  return _buildOrderCardWithCardWidget(
+                                    _filteredPendingOrders[index],
+                                    false,
+                                  );
+                                },
+                              ),
+                    ),
+                  ],
+                ),
+              ),
+>>>>>>> 83694c940533fc03d605946cef6632b9b46b00d4
     );
   }
 
@@ -551,12 +738,12 @@ class _MystaysPageState extends State<MystaysPage> {
           (context) => AlertDialog(
             title: Row(
               children: [
-                Icon(Icons.hotel_outlined, color: Colors.blue, size: 24),
-                SizedBox(width: 8),
+                const Icon(Icons.hotel_outlined, color: Colors.blue, size: 24),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Detail Reservasi',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Poppins',
                     ),
@@ -572,42 +759,48 @@ class _MystaysPageState extends State<MystaysPage> {
                   // Hotel name
                   Text(
                     order['hotelName'],
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                   ),
-                  Divider(),
+                  ),
+                  const Divider(),
 
                   // Payment status indicator
                   Container(
-                    margin: EdgeInsets.symmetric(vertical: 8),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color:
-                          order['status']
+                          order['isPaid']
                               ? Colors.green.withOpacity(0.1)
                               : Colors.orange.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(5),
                       border: Border.all(
-                        color: order['status'] ? Colors.green : Colors.orange,
+                        color: order['isPaid'] ? Colors.green : Colors.orange,
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          order['status']
+                          order['isPaid']
                               ? Icons.check_circle
                               : Icons.pending_outlined,
-                          color: order['status'] ? Colors.green : Colors.orange,
+                          color: order['isPaid'] ? Colors.green : Colors.orange,
                           size: 16,
                         ),
-                        SizedBox(width: 6),
+                        const SizedBox(width: 6),
                         Text(
-                          order['status']
+                          order['isPaid']
                               ? "Pembayaran Selesai"
                               : "Menunggu Pembayaran",
                           style: TextStyle(
                             color:
-                                order['status'] ? Colors.green : Colors.orange,
+                                order['isPaid'] ? Colors.green : Colors.orange,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -615,7 +808,7 @@ class _MystaysPageState extends State<MystaysPage> {
                     ),
                   ),
 
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
                   // Room details with icons
                   _buildDetailRow(
@@ -644,12 +837,12 @@ class _MystaysPageState extends State<MystaysPage> {
                     formattedPrice,
                   ),
 
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
 
                   // Order ID at bottom
                   Text(
                     'ID Pesanan: ${order['id']}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: Colors.grey,
                       fontFamily: 'Poppins',
@@ -661,16 +854,16 @@ class _MystaysPageState extends State<MystaysPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text('Tutup'),
+                child: const Text('Tutup'),
               ),
-              if (!order['status'])
+              if (!order['isPaid'])
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
                     // Add navigation to payment page here
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  child: Text('Bayar Sekarang'),
+                  child: const Text('Bayar Sekarang'),
                 ),
             ],
           ),
@@ -679,25 +872,20 @@ class _MystaysPageState extends State<MystaysPage> {
 
   // Helper method for building detail rows
   Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
+    return Row(
         children: [
           Icon(icon, size: 18, color: Colors.grey),
-          SizedBox(width: 8),
-          Text(label, style: TextStyle(fontWeight: FontWeight.w500)),
-          SizedBox(width: 4),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
+        const SizedBox(width: 4),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(color: Colors.black87),
+            style: const TextStyle(color: Colors.black87),
               textAlign: TextAlign.right,
             ),
           ),
         ],
-      ),
     );
   }
 }
-
-

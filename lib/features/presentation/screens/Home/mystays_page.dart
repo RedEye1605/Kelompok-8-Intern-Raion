@@ -59,10 +59,10 @@ class _MystaysPageState extends State<MystaysPage> {
       QuerySnapshot? orderSnapshot;
       try {
         orderSnapshot =
-          await FirebaseFirestore.instance
-              .collection('orders')
-              .where('userId', isEqualTo: user.uid)
-              .get();
+            await FirebaseFirestore.instance
+                .collection('orders')
+                .where('userId', isEqualTo: user.uid)
+                .get();
 
         // If no results, try the other field name
         if (orderSnapshot.docs.isEmpty) {
@@ -214,15 +214,15 @@ class _MystaysPageState extends State<MystaysPage> {
       // Sort by createdAt (newest first)
       final sortByTimestamp = (List<Map<String, dynamic>> list) {
         list.sort((a, b) {
-        final aTimestamp = a['createdAt'] as Timestamp?;
-        final bTimestamp = b['createdAt'] as Timestamp?;
+          final aTimestamp = a['createdAt'] as Timestamp?;
+          final bTimestamp = b['createdAt'] as Timestamp?;
 
-        if (aTimestamp == null && bTimestamp == null) return 0;
-        if (aTimestamp == null) return 1;
-        if (bTimestamp == null) return -1;
+          if (aTimestamp == null && bTimestamp == null) return 0;
+          if (aTimestamp == null) return 1;
+          if (bTimestamp == null) return -1;
 
-        return bTimestamp.compareTo(aTimestamp);
-      });
+          return bTimestamp.compareTo(aTimestamp);
+        });
       };
 
       sortByTimestamp(paidOrders);
@@ -368,18 +368,18 @@ class _MystaysPageState extends State<MystaysPage> {
                 final filterBySearch =
                     (List<Map<String, dynamic>> list) =>
                         list
-                          .where(
-                            (order) =>
-                                order['hotelName']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(searchLower) ||
-                                order['tipeKamar']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains(searchLower),
-                          )
-                          .toList();
+                            .where(
+                              (order) =>
+                                  order['hotelName']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(searchLower) ||
+                                  order['tipeKamar']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains(searchLower),
+                            )
+                            .toList();
 
                 setState(() {
                   _filteredPaidOrders = filterBySearch(_paidOrders);
@@ -391,7 +391,7 @@ class _MystaysPageState extends State<MystaysPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup'),
+                child: Text('Tutup'),
               ),
             ],
           ),
@@ -411,19 +411,19 @@ class _MystaysPageState extends State<MystaysPage> {
     final String location = order['kecamatan'] ?? "Malang";
 
     return SizedBox(
-          // Updated size to match the requested dimensions
+      // Updated size to match the requested dimensions
       width: double.infinity,
-          height: 269,
-          child: CardWidget(
-            imageUrl: order['imageUrl'],
-            title: order['hotelName'],
+      height: 269,
+      child: CardWidget(
+        imageUrl: order['imageUrl'],
+        title: order['hotelName'],
         alamat: location,
-            price: formattedPrice,
-            rating: 4, // Hide rating
-            ulasan: 200, // Hide reviews
-            onCustomTap: () => _viewOrderDetail(order),
-            isInDashboardWarlok: true,
-          ),
+        price: formattedPrice,
+        rating: 4, // Hide rating
+        ulasan: 200, // Hide reviews
+        onCustomTap: () => _viewOrderDetail(order),
+        isInDashboardWarlok: true,
+      ),
     );
   }
 
@@ -658,7 +658,7 @@ class _MystaysPageState extends State<MystaysPage> {
         child: Icon(Icons.refresh),
         tooltip: 'Refresh Orders',
       ),
-=======
+
 
                     // SECTION 2: PENDING PAYMENT RESERVATIONS - Add padding here
                     Padding(
@@ -762,7 +762,7 @@ class _MystaysPageState extends State<MystaysPage> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                  ),
+                    ),
                   ),
                   const Divider(),
 
@@ -856,14 +856,14 @@ class _MystaysPageState extends State<MystaysPage> {
                 onPressed: () => Navigator.pop(context),
                 child: const Text('Tutup'),
               ),
-              if (!order['isPaid'])
+              if (!order['status'])
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
                     // Add navigation to payment page here
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  child: const Text('Bayar Sekarang'),
+                  child: Text('Bayar Sekarang'),
                 ),
             ],
           ),
@@ -872,20 +872,23 @@ class _MystaysPageState extends State<MystaysPage> {
 
   // Helper method for building detail rows
   Widget _buildDetailRow(IconData icon, String label, String value) {
-    return Row(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
         children: [
           Icon(icon, size: 18, color: Colors.grey),
-        const SizedBox(width: 8),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(width: 4),
+          SizedBox(width: 8),
+          Text(label, style: TextStyle(fontWeight: FontWeight.w500)),
+          SizedBox(width: 4),
           Expanded(
             child: Text(
               value,
-            style: const TextStyle(color: Colors.black87),
+              style: TextStyle(color: Colors.black87),
               textAlign: TextAlign.right,
             ),
           ),
         ],
+      ),
     );
   }
 }

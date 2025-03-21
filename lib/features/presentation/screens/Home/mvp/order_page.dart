@@ -282,17 +282,16 @@ class _OrderPageState extends State<OrderPage> {
   }
 
   Future<void> _editHandle() async {
-    final User? user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Pengguna tidak ditemukan")));
-      return;
-    }
+  final User? user = FirebaseAuth.instance.currentUser;
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Pengguna tidak ditemukan")));
+    return;
+  }
 
-    try {
-      await FirebaseFirestore.instance.collection('orders').add({
-      'userId': user.uid, 
+  try {
+    final docRef = await FirebaseFirestore.instance.collection('orders').add({
+      'userId': user.uid,
       'nama': _namaController.text,
       'email': _emailController.text,
       'negara': _selectedNegara,
@@ -303,17 +302,13 @@ class _OrderPageState extends State<OrderPage> {
       'jumlahKamar': int.tryParse(_jumlahKamarController.text) ?? 1,
       'hotelName': widget.hotelName,
       'price': widget.price,
-      'createdAt': FieldValue.serverTimestamp(), 
-      },);
+      'status': false, // False = Belum Dibayar
+      'createdAt': FieldValue.serverTimestamp(),
+      'expiredAt': DateTime.now().add(Duration(minutes: 30)), // Expired dalam 3 menit
+    });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Order Berhasil dibuat")));
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Gagal menyimpan data: $e")));
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Order Berhasil dibuat")));
 
     final DateTime checkInDate =
         DateFormat('yyyy-MM-dd').parse(_checkInController.text);
@@ -323,17 +318,26 @@ class _OrderPageState extends State<OrderPage> {
     // Hitung jumlah hari
     final int jumlahHari = checkOutDate.difference(checkInDate).inDays;
 
+    // Navigasi ke PaymentPage dengan order ID
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context)=> PaymentPage(
-        hotelName: widget.hotelName,
-        jumlahHari: jumlahHari,
-        tipeKamar: _tipeKamarController.text,
-        pemesan: _namaController.text,
-        price: widget.price,
-      ))
+      MaterialPageRoute(
+        builder: (context) => PaymentPage(
+          orderID: docRef.id.toString(), // Kirim ID order ke halaman pembayaran
+          hotelName: widget.hotelName,
+          jumlahHari: jumlahHari,
+          tipeKamar: _tipeKamarController.text,
+          pemesan: _namaController.text,
+          price: widget.price,
+        ),
+      ),
     );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Gagal menyimpan data: $e")));
   }
+}
+
 
   String _getNomorNegara(String? negara) {
     if (negara == "Indonesia") {

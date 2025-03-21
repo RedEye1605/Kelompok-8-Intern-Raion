@@ -7,6 +7,7 @@ import 'package:my_flutter_app/features/presentation/providers/penginapan_provid
 import 'package:my_flutter_app/features/presentation/screens/Auth/forgot_password.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/hotel-page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/order_page.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/payment_method.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/payment_page.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/search_hotel.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/status_page.dart';
@@ -97,6 +98,7 @@ class MyApp extends StatelessWidget {
           '/search_hotel' : (context) => const SearchHotel(),
           '/road_status': (context) => RoadStatusScreen(),
           '/status_page' : (context) => const StatusPage(),
+          '/payment_method' : (context) => PaymentMethod(),
         },
       ),
     );

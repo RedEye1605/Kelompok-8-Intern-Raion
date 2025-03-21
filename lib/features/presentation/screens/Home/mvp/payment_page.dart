@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/voucher_page.dart';
 import 'package:my_flutter_app/features/presentation/widgets/timer_widget.dart';
+import 'payment_method.dart'; // Import halaman metode pembayaran
 
 class PaymentPage extends StatefulWidget {
   final String orderID;
@@ -25,6 +27,8 @@ class PaymentPage extends StatefulWidget {
 }
 
 class _PaymentPageState extends State<PaymentPage> {
+  String? _selectedMethod; // Menyimpan metode pembayaran yang dipilih
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,35 +99,27 @@ class _PaymentPageState extends State<PaymentPage> {
             ListTile(
               title: Text("Metode Pembayaran"),
               trailing: Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {},
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PaymentMethod()),
+                );
+
+                if (result != null && mounted) {
+                  setState(() {
+                    _selectedMethod = result;
+                  });
+                }
+              },
             ),
+
             // Gunakan Voucher
             ListTile(
               title: Text("Gunakan Voucher"),
               trailing: Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {},
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 5,
-              ),
-              child: Text("atau", style: TextStyle(fontFamily: 'Poppins')),
-            ),
-            SizedBox(height: 10),
-
-            // Input Voucher
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Masukkan kode voucher",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-              ),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => VoucherPage()));
+              },
             ),
 
             SizedBox(height: 20),
@@ -133,7 +129,6 @@ class _PaymentPageState extends State<PaymentPage> {
               "Rincian Harga",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Poppins',
                 fontSize: 24,
               ),
             ),
@@ -166,7 +161,24 @@ class _PaymentPageState extends State<PaymentPage> {
                 ),
               ],
             ),
+
+            SizedBox(height: 10),
+
+            // Tampilkan metode pembayaran jika sudah dipilih
+            if (_selectedMethod != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Metode pembayaran"),
+                  Text(
+                    _selectedMethod!,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+
             SizedBox(height: 20),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -187,7 +199,9 @@ class _PaymentPageState extends State<PaymentPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _paymentHandle,
+                onPressed: _selectedMethod == null
+                    ? null // Tombol dinonaktifkan jika metode pembayaran belum dipilih
+                    : _paymentHandle,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: EdgeInsets.symmetric(vertical: 20),
@@ -208,49 +222,30 @@ class _PaymentPageState extends State<PaymentPage> {
   }
 
   Future<void> _paymentHandle() async {
-  try {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-    // Cek apakah order masih valid
-    DocumentSnapshot orderSnapshot = await firestore
-        .collection('orders')
-        .doc(widget.orderID)
-        .get();
-
-    if (!orderSnapshot.exists) {
+    if (_selectedMethod == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Order tidak ditemukan atau sudah kadaluarsa")),
+        SnackBar(content: Text("Pilih metode pembayaran terlebih dahulu!")),
       );
       return;
     }
 
-    // Hitung total pembayaran
-    double hargaPerHari = double.parse(widget.price);
-    double pajak = hargaPerHari * 0.1;
-    double biayaAdmin = hargaPerHari * 0.05;
-    double totalPembayaran = (hargaPerHari * widget.jumlahHari) + pajak + biayaAdmin;
+    try {
+      FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    // Update order: hapus timer expired dan ubah status pembayaran
-    await firestore.collection('orders').doc(widget.orderID).update({
-      'expiredAt': FieldValue.delete(), 
-      'status': true, 
-    });
+      // Simpan metode pembayaran ke Firestore
+      await firestore.collection('payments').doc(widget.orderID).set({
+        'orderID': widget.orderID,
+        'pemesan': widget.pemesan,
+        'metodePembayaran': _selectedMethod,
+        'tanggalPembayaran': FieldValue.serverTimestamp(),
+      });
 
-    // Simpan pembayaran ke Firestore
-    await firestore.collection('payments').doc(widget.orderID).set({
-      'orderID': widget.orderID,
-      'pemesan': widget.pemesan,
-      'totalPembayaran': totalPembayaran,
-      'tanggalPembayaran': FieldValue.serverTimestamp(),
-    });
-
-    // Navigasi ke halaman status pembayaran
-    Navigator.pushNamed(context, '/status_page');
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Terjadi kesalahan: $e")),
-    );
+      // Navigasi ke halaman status pembayaran
+      Navigator.pushNamed(context, '/status_page');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Terjadi kesalahan: $e")),
+      );
+    }
   }
-}
-
 }

@@ -15,6 +15,9 @@ class CardWidget extends StatelessWidget {
   final List<String>? fasilitas;
   final Map<String, dynamic>? kategoriKamar;
   final String? linkMaps;
+  // New parameter for custom navigation behavior
+  final bool isInDashboardWarlok;
+  final VoidCallback? onCustomTap;
 
   const CardWidget({
     super.key,
@@ -29,32 +32,39 @@ class CardWidget extends StatelessWidget {
     this.fasilitas,
     this.kategoriKamar,
     this.linkMaps,
+    this.isInDashboardWarlok = false,
+    this.onCustomTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Navigasi ke halaman detail
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => DetailPage(
-                  imageUrl: imageUrl,
-                  title: title,
-                  alamat: alamat,
-                  price: price,
-                  rating: rating,
-                  ulasan: ulasan,
-                  additionalImages: additionalImages,
-                  deskripsi: deskripsi,
-                  fasilitas: fasilitas,
-                  kategoriKamar: kategoriKamar,
-                  linkMaps: linkMaps,
-                ),
-          ),
-        );
+        if (isInDashboardWarlok && onCustomTap != null) {
+          // Use custom navigation if we're in dashboard warlok and have a custom handler
+          onCustomTap!();
+        } else {
+          // Default navigation to detail page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => DetailPage(
+                    imageUrl: imageUrl,
+                    title: title,
+                    alamat: alamat,
+                    price: price,
+                    rating: rating,
+                    ulasan: ulasan,
+                    additionalImages: additionalImages,
+                    deskripsi: deskripsi,
+                    fasilitas: fasilitas,
+                    kategoriKamar: kategoriKamar,
+                    linkMaps: linkMaps,
+                  ),
+            ),
+          );
+        }
       },
       child: Center(
         child: Padding(

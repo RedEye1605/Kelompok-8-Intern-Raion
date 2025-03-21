@@ -11,6 +11,7 @@ class PaymentPage extends StatefulWidget {
   final String tipeKamar;
   final String pemesan;
   final String price;
+  final int jumlahKamar;
 
   const PaymentPage({
     super.key,
@@ -20,6 +21,7 @@ class PaymentPage extends StatefulWidget {
     required this.tipeKamar,
     required this.pemesan,
     required this.price,
+    required this.jumlahKamar,
   });
 
   @override

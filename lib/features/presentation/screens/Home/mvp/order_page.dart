@@ -459,6 +459,7 @@ class _OrderPageState extends State<OrderPage> {
             tipeKamar: _selectedKategoriKamar!,
             pemesan: _namaController.text,
             price: _currentPrice,
+            jumlahKamar : int.parse(_jumlahKamarController.text),
           ),
         ),
       );

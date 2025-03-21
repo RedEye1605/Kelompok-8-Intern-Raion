@@ -4,7 +4,7 @@ import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/semua-tab.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/terdekat-tab.dart';
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/warlok-tab.dart';
-import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/pov-warlok-tab/dashboard_warlog.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/dashboard/dashboard_warlog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

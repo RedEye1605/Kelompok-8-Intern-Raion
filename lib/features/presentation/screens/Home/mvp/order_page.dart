@@ -413,7 +413,7 @@ class _OrderPageState extends State<OrderPage> {
       }
     }
     
-     try {
+    try {
       final docRef = await FirebaseFirestore.instance.collection('orders').add({
         'userId': user.uid,
         'nama': _namaController.text,
@@ -426,8 +426,8 @@ class _OrderPageState extends State<OrderPage> {
         'jumlahKamar': int.tryParse(_jumlahKamarController.text) ?? 1,
         'hotelName': widget.penginapan.namaRumah,
         'price': _currentPrice,
-        'penginapanId': penginapanId, // Use our fixed value
-        'ownerId': ownerId, // Use our fixed value
+        'penginapanId': penginapanId,
+        'ownerId': ownerId,
         'status': false,
         'createdAt': FieldValue.serverTimestamp(),
         'expiredAt': DateTime.now().add(Duration(minutes: 30)),
@@ -436,44 +436,38 @@ class _OrderPageState extends State<OrderPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text("Order Berhasil dibuat")));
-    } catch (e) {
-      ScaffoldMessenger.of(
+      
+      // Calculate jumlahHari
+      final DateTime checkInDate = DateFormat(
+        'yyyy-MM-dd',
+      ).parse(_checkInController.text);
+      final DateTime checkOutDate = DateFormat(
+        'yyyy-MM-dd',
+      ).parse(_checkOutController.text);
+
+      // Hitung jumlah hari
+      final int jumlahHari = checkOutDate.difference(checkInDate).inDays;
+
+      // Navigasi ke PaymentPage dengan order ID - MOVED INSIDE the try block
+      Navigator.push(
         context,
-      ).showSnackBar(SnackBar(content: Text("Gagal menyimpan data: $e")));
-    }
-
-
-    // Rest of your code...
-    final DateTime checkInDate = DateFormat(
-      'yyyy-MM-dd',
-    ).parse(_checkInController.text);
-    final DateTime checkOutDate = DateFormat(
-      'yyyy-MM-dd',
-    ).parse(_checkOutController.text);
-
-    // Hitung jumlah hari
-    final int jumlahHari = checkOutDate.difference(checkInDate).inDays;
-
-    // Navigasi ke PaymentPage dengan order ID
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PaymentPage(
-          orderID: docRef.id.toString(),
-          hotelName: widget.penginapan.namaRumah,
-          jumlahHari: jumlahHari,
-          tipeKamar: _selectedKategoriKamar!,
-          pemesan: _namaController.text,
-          price: _currentPrice,
+        MaterialPageRoute(
+          builder: (context) => PaymentPage(
+            orderID: docRef.id.toString(), // Now docRef is in scope
+            hotelName: widget.penginapan.namaRumah,
+            jumlahHari: jumlahHari,
+            tipeKamar: _selectedKategoriKamar!,
+            pemesan: _namaController.text,
+            price: _currentPrice,
+          ),
         ),
-      ),
-    );
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Gagal menyimpan data: $e")));
-  }
+      );
+      
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal menyimpan data: $e")));
+    }
 }
-
 
   String _getNomorNegara(String? negara) {
     if (negara == "Indonesia") {

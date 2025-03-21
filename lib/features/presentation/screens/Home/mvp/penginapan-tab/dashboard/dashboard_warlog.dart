@@ -3,8 +3,8 @@ import 'package:my_flutter_app/di/injection_container.dart' as di;
 import 'package:my_flutter_app/features/domain/entities/penginapan.dart';
 import 'package:my_flutter_app/features/presentation/providers/penginapan_form_provider.dart';
 import 'package:my_flutter_app/features/presentation/providers/penginapan_provider.dart'; // Add this
-import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/pov-warlok-tab/create_rumah_screen.dart';
-import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/pov-warlok-tab/edit_rumah_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/dashboard/create_rumah_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/dashboard/edit_rumah_screen.dart';
 import 'package:my_flutter_app/features/presentation/widgets/card_widget.dart'; // Add this
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Add this

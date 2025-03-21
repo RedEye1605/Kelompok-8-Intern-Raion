@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/pov-warlok-tab/pratinjau.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/dashboard/pratinjau.dart';
 import 'package:provider/provider.dart';
 import 'package:my_flutter_app/features/presentation/providers/penginapan_form_provider.dart';
 import 'package:image_picker/image_picker.dart';

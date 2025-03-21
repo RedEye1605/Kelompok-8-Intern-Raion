@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/features/presentation/widgets/ads_banner.dart';
 import 'package:my_flutter_app/features/presentation/widgets/card_widget.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/explore.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/transport.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -73,7 +75,12 @@ class Home extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ExplorePage()),
+                    );
+                  },
                   icon: Image.asset("assets/icons/explore-btn.png"),
                 ),
                 IconButton(
@@ -89,7 +96,12 @@ class Home extends StatelessWidget {
                   icon: Image.asset("assets/icons/road-btn.png"),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const TransportPage()),
+                    );
+                  },
                   icon: Image.asset("assets/icons/transport-btn.png"),
                 ),
               ],

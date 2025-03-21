@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:my_flutter_app/di/injection_container.dart' as di;
+import 'package:my_flutter_app/features/domain/entities/penginapan.dart';
 import 'package:my_flutter_app/features/presentation/providers/penginapan_form_provider.dart';
 import 'package:my_flutter_app/features/presentation/providers/penginapan_provider.dart'; // Add this
 import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/pov-warlok-tab/create_rumah_screen.dart';
+import 'package:my_flutter_app/features/presentation/screens/Home/mvp/penginapan-tab/pov-warlok-tab/edit_rumah_screen.dart';
 import 'package:my_flutter_app/features/presentation/widgets/card_widget.dart'; // Add this
 import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Add this
@@ -165,7 +167,6 @@ class _DashboardWarlogState extends State<DashboardWarlog>
                                 price: '${harga}',
                                 rating: 4.0,
                                 ulasan: 0,
-                                // Add these additional properties
                                 additionalImages:
                                     penginapan.fotoPenginapan.length > 1
                                         ? penginapan.fotoPenginapan.sublist(1)
@@ -188,6 +189,47 @@ class _DashboardWarlogState extends State<DashboardWarlog>
                                         : null,
                                 kategoriKamar: penginapan.kategoriKamar,
                                 linkMaps: penginapan.linkMaps,
+                                isInDashboardWarlok: true,
+                                onCustomTap: () {
+                                  final Map<String, dynamic>
+                                  penginapanDataMap = {
+                                    'namaRumah': penginapan.namaRumah,
+                                    'alamatJalan': penginapan.alamatJalan,
+                                    'kecamatan': penginapan.kecamatan,
+                                    'kelurahan': penginapan.kelurahan,
+                                    'kodePos': penginapan.kodePos,
+                                    'linkMaps': penginapan.linkMaps,
+                                    'kategoriKamar': _convertKategoriToMap(
+                                      penginapan.kategoriKamar,
+                                    ),
+                                    'fotoPenginapan':
+                                        penginapan
+                                            .fotoPenginapan, // Pass the image URLs
+                                  };
+
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => ChangeNotifierProvider(
+                                            create:
+                                                (_) =>
+                                                    di
+                                                        .sl<
+                                                          PenginapanFormProvider
+                                                        >(),
+                                            child: EditRumahScreen(
+                                              penginapanId: penginapan.id ?? '',
+                                              penginapanData: penginapanDataMap,
+                                            ),
+                                          ),
+                                    ),
+                                  ).then((_) {
+                                    // Refresh data after returning from edit screen
+                                    penginapanProvider
+                                        .loadCurrentUserPenginapan();
+                                  });
+                                },
                               ),
                             );
                           }).toList(),
@@ -352,5 +394,21 @@ class _DashboardWarlogState extends State<DashboardWarlog>
         );
       },
     );
+  }
+
+  // Add this helper method to your _DashboardWarlogState class
+  Map<String, dynamic> _convertKategoriToMap(
+    Map<String, KategoriKamarEntity> kategoriMap,
+  ) {
+    final result = <String, dynamic>{};
+    kategoriMap.forEach((key, value) {
+      result[key] = {
+        'deskripsi': value.deskripsi,
+        'harga': value.harga,
+        'jumlah': value.jumlah,
+        'fasilitas': value.fasilitas,
+      };
+    });
+    return result;
   }
 }

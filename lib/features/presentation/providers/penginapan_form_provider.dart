@@ -37,6 +37,7 @@ class PenginapanFormProvider with ChangeNotifier {
   List<File> _mainImages = [];
   String? _imageError;
   final int maxMainImages = 5; // Batas maksimum 5 foto sampul
+  List<String> _existingImageUrls = []; // Add this field to your class
 
   // Kategori kamar data
   Map<String, KategoriKamarFormData> _kategoriMap = {};
@@ -60,15 +61,19 @@ class PenginapanFormProvider with ChangeNotifier {
   String get kodePos => _kodePos;
   String get linkMaps => _linkMaps;
   List<File> get mainImages => _mainImages;
-  bool get hasMainImages => _mainImages.isNotEmpty;
-  int get mainImagesCount => _mainImages.length;
-  bool get canAddMoreMainImages => _mainImages.length < maxMainImages;
+  bool get hasMainImages =>
+      _mainImages.isNotEmpty || _existingImageUrls.isNotEmpty;
+  int get mainImagesCount => _mainImages.length + _existingImageUrls.length;
+  bool get canAddMoreMainImages =>
+      (_mainImages.length + _existingImageUrls.length) < maxMainImages;
   String? get imageError => _imageError;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   Map<String, KategoriKamarFormData> get kategoriMap => _kategoriMap;
   List<String> get selectedKategori => _selectedKategori;
   String get currentKategori => _currentKategori;
+  List<String> get existingImageUrls => _existingImageUrls;
+  bool get hasExistingImages => _existingImageUrls.isNotEmpty;
 
   // Lists for dropdowns
   final List<String> kategoriOptions = [
@@ -417,6 +422,7 @@ class PenginapanFormProvider with ChangeNotifier {
       'mainImages': _mainImages, // Tetap simpan untuk penggunaan lokal
       'mainImagePaths':
           mainImagePaths, // TAMBAHKAN INI: Simpan path saja untuk navigasi
+      'existingImageUrls': _existingImageUrls,
     };
   }
 
@@ -663,5 +669,96 @@ class PenginapanFormProvider with ChangeNotifier {
     hargaController.dispose();
     jumlahController.dispose();
     super.dispose();
+  }
+
+  void loadFromExistingData(Map<String, dynamic> penginapanData) {
+    // Basic information
+    _namaRumah = penginapanData['namaRumah'] ?? '';
+    _alamatJalan = penginapanData['alamatJalan'] ?? '';
+    _kecamatan = penginapanData['kecamatan'] ?? 'Lowokwaru';
+    _kelurahan = penginapanData['kelurahan'] ?? 'Jatimulyo';
+    _kodePos = penginapanData['kodePos'] ?? '65141';
+    _linkMaps = penginapanData['linkMaps'] ?? '';
+
+    // Clear previous values but keep images
+    _imageError = null;
+    _mainImages = [];
+    _existingImageUrls = [];
+
+    // Store existing image URLs
+    if (penginapanData['fotoPenginapan'] != null &&
+        penginapanData['fotoPenginapan'] is List) {
+      _existingImageUrls = List<String>.from(penginapanData['fotoPenginapan']);
+      print(
+        "Loaded ${_existingImageUrls.length} existing images",
+      ); // Debug info
+    }
+
+    // Load kategori kamar
+    _kategoriMap = {};
+    _selectedKategori = [];
+    _currentKategori = '';
+
+    if (penginapanData['kategoriKamar'] != null &&
+        penginapanData['kategoriKamar'] is Map) {
+      (penginapanData['kategoriKamar'] as Map).forEach((key, value) {
+        _selectedKategori.add(key.toString());
+
+        _kategoriMap[key.toString()] = KategoriKamarFormData(
+          nama: key.toString(),
+          deskripsi: value['deskripsi'] ?? '',
+          fasilitas:
+              value['fasilitas'] is List
+                  ? List<String>.from(value['fasilitas'])
+                  : (value['fasilitas'] != null
+                      ? [value['fasilitas'].toString()]
+                      : []),
+          harga: value['harga'] ?? '',
+          jumlah: value['jumlah'] ?? '',
+        );
+      });
+
+      // Set current kategori to first one if available
+      if (_selectedKategori.isNotEmpty) {
+        _currentKategori = _selectedKategori.first;
+
+        // Update the controllers
+        deskripsiController.text =
+            _kategoriMap[_currentKategori]?.deskripsi ?? '';
+        hargaController.text = _kategoriMap[_currentKategori]?.harga ?? '';
+        jumlahController.text = _kategoriMap[_currentKategori]?.jumlah ?? '';
+      }
+    }
+
+    notifyListeners();
+  }
+
+  void removeExistingImage(int index) {
+    if (index >= 0 && index < _existingImageUrls.length) {
+      _existingImageUrls.removeAt(index);
+      notifyListeners();
+    }
+  }
+
+  // Add this method to reset form data
+  void resetFormData() {
+    _namaRumah = '';
+    _alamatJalan = '';
+    _kecamatan = 'Lowokwaru';
+    _kelurahan = 'Jatimulyo';
+    _kodePos = '65141';
+    _linkMaps = '';
+    _mainImages = [];
+    _existingImageUrls = [];
+    _imageError = null;
+    _kategoriMap = {};
+    _selectedKategori = [];
+    _currentKategori = '';
+
+    deskripsiController.clear();
+    hargaController.clear();
+    jumlahController.clear();
+
+    notifyListeners();
   }
 }

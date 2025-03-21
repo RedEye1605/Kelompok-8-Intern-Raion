@@ -278,11 +278,11 @@ class _DetailPageState extends State<DetailPage> {
             ),
           ),
 
-          // Draggable Sheet for Details - ukuran dikurangi menjadi 1/4 layar
+          // Draggable Sheet for Details 
           DraggableScrollableSheet(
-            initialChildSize: 0.37, // Dikurangi dari 0.6 menjadi 0.25
-            minChildSize: 0.3, // Dikurangi dari 0.6 menjadi 0.2
-            maxChildSize: 0.9, // Tetap 0.9 agar dapat melihat detail
+            initialChildSize: 0.37,
+            minChildSize: 0.3, 
+            maxChildSize: 0.9, 
             builder: (context, scrollController) {
               return Container(
                 decoration: const BoxDecoration(

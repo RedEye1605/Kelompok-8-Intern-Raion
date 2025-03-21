@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:my_flutter_app/features/data/datasources/cloudinary_service.dart';
 import 'package:my_flutter_app/features/domain/entities/penginapan.dart';
 import 'package:my_flutter_app/features/domain/usecases/create_penginapan.dart';
 import 'package:my_flutter_app/features/domain/usecases/get_all_penginapan.dart';
@@ -187,25 +188,25 @@ class PenginapanProvider with ChangeNotifier {
     required String id,
     required Map<String, dynamic> formData,
     required List<File> images,
+    List<String> existingImageUrls = const [],
   }) async {
     try {
       _isLoading = true;
       notifyListeners();
 
-      // Get existing image URLs to keep
-      List<String> existingImageUrls = [];
-      if (formData['existingImageUrls'] != null) {
-        existingImageUrls = List<String>.from(formData['existingImageUrls']);
-      }
+      print('Update penginapan with ID: $id');
+      print(
+        'Existing URLs: ${existingImageUrls.length}, New images: ${images.length}',
+      );
 
-      // Process category room data
+      // Process category room data - keep all kategori data from form
       final Map<String, KategoriKamarEntity> kategoriKamarMap = {};
       if (formData['kategoriKamar'] != null) {
         (formData['kategoriKamar'] as Map<String, dynamic>).forEach((
           key,
           value,
         ) {
-          // Handle fasilitas as before
+          // Handle facilities properly
           List<String> fasilitas;
           if (value['fasilitas'] is String) {
             fasilitas = [value['fasilitas']];
@@ -215,20 +216,46 @@ class PenginapanProvider with ChangeNotifier {
             fasilitas = [];
           }
 
+          print(
+            'Processing category: $key with ${fasilitas.length} facilities',
+          );
+          print(
+            'Category data: harga=${value['harga']}, jumlah=${value['jumlah']}',
+          );
+
           kategoriKamarMap[key] = KategoriKamarEntity(
             nama: key,
             deskripsi: value['deskripsi'] ?? '',
             fasilitas: fasilitas,
             harga: value['harga'] ?? '0',
             jumlah: value['jumlah'] ?? '0',
-            fotoKamar: [], // To be implemented later
+            fotoKamar: [], // Will be implemented later if needed
           );
         });
       }
 
-      // Create updated penginapan entity
+      // Combined image URLs list
+      List<String> allImageUrls = [...existingImageUrls];
+
+      // Upload new images if any - use direct CloudinaryService to avoid creating new document
+      if (images.isNotEmpty) {
+        final cloudinaryService = CloudinaryService();
+
+        for (var imageFile in images) {
+          // Upload directly to Cloudinary
+          final imageUrl = await cloudinaryService.uploadImage(imageFile);
+          if (imageUrl != null) {
+            allImageUrls.add(imageUrl);
+            print('New image uploaded: $imageUrl');
+          }
+        }
+
+        print('Total combined images: ${allImageUrls.length}');
+      }
+
+      // Create updated entity with proper data
       final penginapan = PenginapanEntity(
-        id: id,
+        id: id, // Keep the same ID to ensure update not create
         namaRumah: formData['namaRumah'],
         alamatJalan: formData['alamatJalan'],
         kecamatan: formData['kecamatan'],
@@ -236,16 +263,18 @@ class PenginapanProvider with ChangeNotifier {
         kodePos: formData['kodePos'],
         linkMaps: formData['linkMaps'],
         kategoriKamar: kategoriKamarMap,
-        fotoPenginapan: existingImageUrls,
+        fotoPenginapan: allImageUrls,
         userID: FirebaseAuth.instance.currentUser?.uid ?? '',
-        createdAt: DateTime.now(),
+        createdAt: DateTime.now(), // Could preserve original date if needed
         updatedAt: DateTime.now(),
       );
 
-      // Use the UpdatePenginapan use case
+      // Use the UpdatePenginapan use case - this should be just updating not creating
       await _updatePenginapanUseCase(
         UpdatePenginapanParams(id: id, penginapan: penginapan),
       );
+
+      print('Successfully updated document with ID: $id');
 
       // Reload data
       await loadPenginapan();
@@ -254,10 +283,18 @@ class PenginapanProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
       print("Error updating penginapan: $_errorMessage");
+      throw e;
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  // Add this helper method to get CloudinaryService
+  Future<CloudinaryService> _getCloudinaryService() async {
+    // You can inject this dependency directly or get it from the DI container
+    // This is a placeholder for how you might access it
+    return CloudinaryService(); // Replace with your actual implementation
   }
 
   // 5. Delete penginapan

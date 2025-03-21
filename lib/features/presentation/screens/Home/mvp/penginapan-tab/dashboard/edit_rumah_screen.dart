@@ -29,8 +29,6 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
 
   // Text controllers untuk form fields
   final TextEditingController _deskripsiController = TextEditingController();
-  final TextEditingController _hargaController = TextEditingController();
-  final TextEditingController _jumlahController = TextEditingController();
   final TextEditingController _namaRumahController = TextEditingController();
   final TextEditingController _alamatJalanController = TextEditingController();
   final TextEditingController _linkMapsController = TextEditingController();
@@ -102,8 +100,6 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
     _alamatJalanController.text = formProvider.alamatJalan;
     _linkMapsController.text = formProvider.linkMaps;
     _deskripsiController.text = formProvider.deskripsiController.text;
-    _hargaController.text = formProvider.hargaController.text;
-    _jumlahController.text = formProvider.jumlahController.text;
   }
 
   Future<void> _pickImage() async {
@@ -333,9 +329,16 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
       listen: false,
     );
 
-    // Validate and save current category data
+    // Always save current category data before validating
     if (formProvider.currentKategori.isNotEmpty) {
       formProvider.saveCurrentKategoriData();
+      print("Saved current category: ${formProvider.currentKategori}");
+    }
+
+    // Make sure all required fields for all categories are filled
+    for (String kategori in formProvider.selectedKategori) {
+      formProvider.switchKategori(kategori);
+      // Validate this category's data here if needed
     }
 
     bool isValid = _formKey.currentState?.validate() ?? false;
@@ -344,7 +347,8 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
       _formKey.currentState?.save();
 
       // Check for required data
-      if (!formProvider.hasMainImages) {
+      if (!formProvider.hasMainImages &&
+          formProvider.existingImageUrls.isEmpty) {
         formProvider.setImageError('Minimal satu foto rumah harus diupload');
         return;
       }
@@ -358,6 +362,17 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
         return;
       }
 
+      // Print category data for debugging
+      final categoryData =
+          formProvider.getAllData()['kategoriKamar'] as Map<String, dynamic>;
+      categoryData.forEach((key, value) {
+        print('Category: $key');
+        print('Description: ${value['deskripsi']}');
+        print('Price: ${value['harga']}');
+        print('Quantity: ${value['jumlah']}');
+        print('Facilities count: ${(value['fasilitas'] as List).length}');
+      });
+
       // Update data
       setState(() => _isLoading = true);
 
@@ -368,17 +383,18 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
           listen: false,
         );
 
+        print('Updating penginapan with ID: ${widget.penginapanId}');
+        print('Category count: ${(data['kategoriKamar'] as Map).length}');
+
         await penginapanProvider.updatePenginapan(
           id: widget.penginapanId,
           formData: data,
           images: formProvider.mainImages,
+          existingImageUrls: formProvider.existingImageUrls,
         );
 
         if (mounted) {
-          // Clear the navigator stack and go back to the first route (home)
           Navigator.of(context).popUntil((route) => route.isFirst);
-
-          // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Data berhasil diperbarui'),
@@ -425,7 +441,7 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Foto Samping Rumah
+              // Foto Sampul Rumah (keep as is)
               Row(
                 children: const [
                   Text(
@@ -443,6 +459,7 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
                 ],
               ),
               const SizedBox(height: 8),
+              // Photo selection section (keep as is)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -915,39 +932,6 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
                 ),
               ),
 
-              // Link Maps
-              const SizedBox(height: 24),
-              Row(
-                children: const [
-                  Text(
-                    "Link Maps ",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "wajib",
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      color: Colors.black54,
-                      fontWeight: FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _linkMapsController,
-                decoration: InputDecoration(
-                  hintText: "Contoh: https://maps.google.com/?q=...",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                onChanged: (value) => formProvider.setLinkMaps(value),
-                validator:
-                    (value) =>
-                        value?.isEmpty ?? true ? 'Link Maps harus diisi' : null,
-              ),
-
               // Show additional fields only if a category is active
               if (formProvider.currentKategori.isNotEmpty) ...[
                 const SizedBox(height: 24),
@@ -1168,7 +1152,9 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
                             SizedBox(
                               width: 80,
                               child: TextField(
-                                controller: _jumlahController,
+                                controller:
+                                    formProvider
+                                        .jumlahController, // USE PROVIDER'S CONTROLLER
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(
@@ -1176,7 +1162,6 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
                                   ),
                                 ),
                                 onChanged: (value) {
-                                  // TETAP PANGGIL SETTER untuk memperbarui data model
                                   formProvider.setJumlahKamar(value);
                                 },
                               ),
@@ -1216,7 +1201,9 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
                             children: [
                               Expanded(
                                 child: TextField(
-                                  controller: _hargaController,
+                                  controller:
+                                      formProvider
+                                          .hargaController, // USE PROVIDER'S CONTROLLER
                                   keyboardType: TextInputType.number,
                                   decoration: InputDecoration(
                                     prefixText: "Rp ",
@@ -1225,7 +1212,6 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
                                     ),
                                   ),
                                   onChanged: (value) {
-                                    // TETAP PANGGIL SETTER untuk memperbarui data model
                                     formProvider.setHargaKamar(value);
                                   },
                                 ),
@@ -1346,6 +1332,39 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
                     ),
               ],
 
+              // Link Maps
+              const SizedBox(height: 24),
+              Row(
+                children: const [
+                  Text(
+                    "Link Maps ",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    "wajib",
+                    style: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _linkMapsController,
+                decoration: InputDecoration(
+                  hintText: "Contoh: https://maps.google.com/?q=...",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onChanged: (value) => formProvider.setLinkMaps(value),
+                validator:
+                    (value) =>
+                        value?.isEmpty ?? true ? 'Link Maps harus diisi' : null,
+              ),
+
               // Bottom padding to ensure form is fully visible
               const SizedBox(height: 100),
             ],
@@ -1432,8 +1451,6 @@ class _EditRumahScreenState extends State<EditRumahScreen> {
     _alamatJalanController.dispose();
     _linkMapsController.dispose();
     _deskripsiController.dispose();
-    _hargaController.dispose();
-    _jumlahController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
